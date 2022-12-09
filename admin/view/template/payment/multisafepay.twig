@@ -1,0 +1,719 @@
+{{ header }}{{ column_left }}
+<div id="content" class="multisafepay-admin-page">
+    <div class="page-header">
+        <div class="container-fluid">
+            <div class="float-end">
+                <div class="input-group mb-3">
+                    {% if stores %}
+                    <div class="input-group" id="store-switcher">
+                        <button type="button" data-bs-toggle="dropdown" class="btn btn-light dropdown-toggle store_home" aria-haspopup="true" aria-expanded="false"><i class="fas fa-home"></i> <i class="fa-solid fa-caret-down"></i></button>
+                        <ul class="dropdown-menu store_menu">
+                        {% for store in stores %}
+                            <li><a class="dropdown-item" href="{{ store.href }}">{{ store.name }}</a></li>
+                        {% endfor %}
+                        </ul>
+                        <input type="text" class="form-control store_input" aria-label="..." value="{{ stores[store_id].name }}" disabled>
+                    </div>
+                    {% endif %}
+                    <button type="submit" form="form-multisafepay" data-bs-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary store_button"><i class="fa-solid fa-save"></i></button>
+                    <a href="{{ back }}" data-bs-toggle="tooltip" title="{{ button_back }}" class="btn btn-light store_link"><i class="fa-solid fa-reply"></i></a>
+                </div>
+            </div>
+            <h1>{{ heading_title }}</h1>
+            <ul class="breadcrumb">
+                {% for breadcrumb in breadcrumbs %}
+                <li class="breadcrumb-item"><a href="{{ breadcrumb['href'] }}">{{ breadcrumb['text'] }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    <div class="container-fluid">
+        {% if error_warning %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-circle"></i>&nbsp;&nbsp;{{ error_warning }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endif %}
+        {% if needs_upgrade %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-circle"></i>&nbsp;&nbsp;{{ text_needs_upgrade_warning }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endif %}
+        <div class="panel panel-default card">
+            <div class="panel-heading card-header">
+                <h3 class="panel-title"><i class="fas fa-pencil-alt"></i>&nbsp;&nbsp;{{ text_edit }}</h3>
+            </div>
+            <div class="panel-body card-body">
+                <form action="{{ save }}" method="post" id="form-multisafepay" class="form-horizontal" data-oc-toggle="ajax">
+                    <input type="hidden" name="payment_multisafepay_account_type" value="connect" />
+                    <ul class="nav nav-tabs" id="tabs">
+                        <li class="nav-item active"><a href="#tab-general" data-bs-toggle="tab" class="nav-link active">{{ tab_general }}</a></li>
+                        <li class="nav-item"><a href="#tab-account" data-bs-toggle="tab" class="nav-link">{{ tab_account }}</a></li>
+                        <li class="nav-item"><a href="#tab-payment-methods" data-bs-toggle="tab" class="nav-link">{{ tab_payment_methods }}</a></li>
+                        <li class="nav-item"><a href="#tab-status" data-bs-toggle="tab" class="nav-link">{{ tab_order_status }}</a></li>
+                        <li class="nav-item"><a href="#tab-options" data-bs-toggle="tab" class="nav-link">{{ tab_options }}</a></li>
+                        <li class="nav-item"><a href="#tab-support" data-bs-toggle="tab" class="nav-link">{{ tab_support }}</a></li>
+                    </ul>
+                    <div class="tab-content">
+                        {# -- Tab General -- #}
+                        <div class="tab-pane active" id="tab-general">
+                            {# -- Module Status -- #}
+                            <div class="form-group group-id row mb-3">
+                                <label class="col-sm-2 col-form-label" for="payment-multisafepay-status">{{ entry_status }}</label>
+                                <div class="col-sm-10">
+                                    <div class="input-group">
+                                        <select name="payment_multisafepay_status" id="payment-multisafepay-status" class="form-select">
+                                            <option value="1" {% if payment_multisafepay_status == 1 %} selected {% endif %}>{{ text_enabled }}</option>
+                                            <option value="0" {% if payment_multisafepay_status == 0 %} selected {% endif %}>{{ text_disabled }}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            {# -- Sort Order -- #}
+                            <div class="form-group group-id row mb-3">
+                                <label class="col-sm-2 col-form-label" for="payment-multisafepay-sort-order">{{ entry_sort_order }}</label>
+                                <div class="col-sm-10">
+                                    <div class="input-group">
+                                        <input type="text" name="payment_multisafepay_sort_order" value="{{ payment_multisafepay_sort_order }}" id="payment-multisafepay-sort-order" placeholder="{{ entry_sort_order }}" class="form-control" />
+                                    </div>
+                                </div>
+                            </div>
+                            {# -- MultiSafepay Debug Mode -- #}
+                            <div class="form-group group-id row mb-3">
+                                <label class="col-sm-2 col-form-label" for="payment-multisafepay-debug-mode"><span data-bs-toggle="tooltip" title="{{ text_help_debug }}">{{ entry_debug_mode }}</span></label>
+                                <div class="col-sm-10">
+                                    <div class="input-group">
+                                        <select name="payment_multisafepay_debug_mode" id="payment-multisafepay-debug-mode" class="form-select">
+                                            <option value="0" {% if payment_multisafepay_debug_mode == 0 %} selected {% endif %}>{{ text_disabled }}</option>
+                                            <option value="1" {% if payment_multisafepay_debug_mode == 1 %} selected {% endif %}>{{ text_enabled }}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {# -- Tab Acount -- #}
+                        <div class="tab-pane" id="tab-account">
+                            {# -- MultiSafepay Environment -- #}
+                            <div class="form-group group-id row mb-3">
+                                <label class="col-sm-2 col-form-label" for="payment-multisafepay-environment">{{ entry_environment }}</label>
+                                <div class="col-sm-10">
+                                    <div class="input-group">
+                                        <select name="payment_multisafepay_environment" id="payment-multisafepay-environment" class="form-select">
+                                            <option value="1" {% if payment_multisafepay_environment == 1 %} selected {% endif %}>{{ text_test }}</option>
+                                            <option value="0" {% if payment_multisafepay_environment == 0 %} selected {% endif %}>{{ text_live }}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            {# -- Sandbox Api Key -- #}
+                            <div class="form-group group-id row mb-3">
+                                <label class="col-sm-2 col-form-label" for="payment-multisafepay-sandbox-api-key">{{ entry_multisafepay_sandbox_api_key }}</label>
+                                <div class="col-sm-10">
+                                    <input type="text" name="payment_multisafepay_sandbox_api_key" value="{{ payment_multisafepay_sandbox_api_key }}" id="payment-multisafepay-sandbox-api-key" placeholder="{{ entry_multisafepay_sandbox_api_key }}" class="form-control" />
+                                    <div id="error-sandbox-api-key" class="invalid-feedback"></div>
+                                </div>
+                            </div>
+                            {# -- Api Key -- #}
+                            <div class="form-group group-id row mb-3">
+                                <label class="col-sm-2 col-form-label" for="payment-multisafepay-api-key">{{ entry_multisafepay_api_key }}</label>
+                                <div class="col-sm-10">
+                                    <input type="text" name="payment_multisafepay_api_key" value="{{ payment_multisafepay_api_key }}" id="payment-multisafepay-api-key" placeholder="{{ entry_multisafepay_api_key }}" class="form-control" />
+                                    <div id="error-api-key" class="invalid-feedback"></div>
+                                </div>
+                            </div>
+                        </div>
+                        {# -- Tab Options -- #}
+                        <div class="tab-pane" id="tab-options">
+                            {# -- Order Description  -- #}
+                            <div class="form-group group-id row mb-3">
+                                <label class="col-sm-2 col-form-label" for="payment-multisafepay-order-description"><span data-bs-toggle="tooltip" title="{{ text_help_order_description }}">{{ entry_multisafepay_order_description }}</span></label>
+                                <div class="col-sm-10">
+                                    <div class="input-group">
+                                        <input type="text" name="payment_multisafepay_order_description" value="{{ payment_multisafepay_order_description }}" id="payment-multisafepay-order-description" placeholder="{{ entry_multisafepay_order_description }}" class="form-control" />
+                                    </div>
+                                </div>
+                            </div>
+                            {# -- Google Analytics Account ID  -- #}
+                            <div class="form-group group-id row mb-3">
+                                <label class="col-sm-2 col-form-label" for="payment-multisafepay-google-analytics-account-id"><span data-bs-toggle="tooltip" title="{{ text_help_google_analytics_account_id }}">{{ entry_multisafepay_google_analytics_account_id }}</span></label>
+                                <div class="col-sm-10">
+                                    <div class="input-group">
+                                        <input type="text" name="payment_multisafepay_google_analytics_account_id" value="{{ payment_multisafepay_google_analytics_account_id }}" id="payment-multisafepay-google-analytics-account-id" placeholder="{{ entry_multisafepay_google_analytics_account_id }}" class="form-control" />
+                                    </div>
+                                </div>
+                            </div>
+                            {# -- Days Active  -- #}
+                            <div class="form-group group-id row mb-3">
+                                <label class="col-sm-2 col-form-label" for="payment-multisafepay-unit-lifetime-payment-link"><span data-bs-toggle="tooltip" title="{{ text_help_lifetime_payment_link }}">{{ entry_multisafepay_lifetime_payment_link }}</span></label>
+                                <div class="col-sm-5">
+                                    <div class="input-group">
+                                        <label for="payment-multisafepay-days-active"></label>
+                                        <input type="text" name="payment_multisafepay_days_active" value="{{ payment_multisafepay_days_active }}" id="payment-multisafepay-days-active" placeholder="{{ entry_multisafepay_time_active }}" class="form-control" />
+                                        <div id="error-days-active" class="invalid-feedback"></div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-5">
+                                    <div class="input-group">
+                                        <select name="payment_multisafepay_unit_lifetime_payment_link" id="payment-multisafepay-unit-lifetime-payment-link" class="form-select">
+                                            <option value="days" {% if payment_multisafepay_unit_lifetime_payment_link == 'days' %} selected {% endif %}>{{ text_days }}</option>
+                                            <option value="hours" {% if payment_multisafepay_unit_lifetime_payment_link == 'hours' %} selected {% endif %}>{{ text_hours }}</option>
+                                            <option value="seconds" {% if payment_multisafepay_unit_lifetime_payment_link == 'seconds' %} selected {% endif %}>{{ text_seconds }}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            {# -- Use Second Chance-- #}
+                            <div class="form-group group-id row mb-3">
+                                <label class="col-sm-2 col-form-label" for="payment-multisafepay-second-chance"><span data-bs-toggle="tooltip" title="{{ text_help_second_chance }}">{{ entry_multisafepay_second_chance }}</span></label>
+                                <div class="col-sm-10">
+                                    <div class="input-group">
+                                        <select name="payment_multisafepay_second_chance" id="payment-multisafepay-second-chance" class="form-select">
+                                            <option value="1" {% if payment_multisafepay_second_chance == '1' %} selected {% endif %}>{{ text_yes }}</option>
+                                            <option value="0" {% if payment_multisafepay_second_chance == '0' %} selected {% endif %}>{{ text_no }}</option>
+                                        </select>
+                                    </div>
+                                    <p class="help-block">{{ text_help_more_info_second_chance }}</p>
+                                </div>
+                            </div>
+                            {# -- Disable Shopping Cart -- #}
+                            <div class="form-group group-id row mb-3">
+                                <label class="col-sm-2 col-form-label" for="payment-multisafepay-shopping-cart-disabled">{{ entry_multisafepay_shopping_cart_disabled }}</label>
+                                <div class="col-sm-10">
+                                    <div class="input-group">
+                                        <select name="payment_multisafepay_shopping_cart_disabled" id="payment-multisafepay-shopping-cart-disabled" class="form-select">
+                                            <option value="0" {% if payment_multisafepay_shopping_cart_disabled == '0' %} selected {% endif %}>{{ text_no }}</option>
+                                            <option value="1" {% if payment_multisafepay_shopping_cart_disabled == '1' %} selected {% endif %}>{{ text_yes }}</option>
+                                        </select>
+                                    </div>
+                                    <p class="help-block">{{ text_help_shopping_cart_disabled }}</p>
+                                </div>
+                            </div>
+                            {# -- Set Custom Order Total Keys -- #}
+                            <div class="form-group group-id row mb-3">
+                                <label class="col-sm-2 col-form-label" for="payment-multisafepay-custom-order-totals-keys"><span data-bs-toggle="tooltip" title="{{ text_help_custom_order_total_keys }}">{{ entry_custom_order_total_keys }}</span></label>
+                                <div class="col-sm-10">
+                                    <div class="input-group">
+                                        <input type="text" name="payment_multisafepay_custom_order_total_keys" value="{{ payment_multisafepay_custom_order_total_keys }}" id="payment-multisafepay-custom-order-totals-keys" placeholder="{{ entry_custom_order_total_keys }}" class="form-control" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {# -- Tab Order Status -- #}
+                        <div class="tab-pane" id="tab-status">
+                            {# -- Set Initialized Status -- #}
+                            <div class="form-group group-id row mb-3">
+                                <label class="col-sm-2 col-form-label" for="payment-multisafepay-order-status-id-initialized"><span data-bs-toggle="tooltip" title="" data-original-title="{{ text_help_order_status_id_initialized }}">{{ entry_order_status_id_initialized }}</span></label>
+                                <div class="col-sm-10">
+                                    <div class="input-group">
+                                        <select name="payment_multisafepay_order_status_id_initialized" id="payment-multisafepay-order-status-id-initialized" class="form-select">
+                                            {% for order_status in order_statuses %}
+                                                <option value="{{ order_status['order_status_id'] }}"{% if order_status['order_status_id'] == payment_multisafepay_order_status_id_initialized %} selected {% endif %}>{{ order_status['name'] }}</option>
+                                            {% endfor %}
+                                            <option value="0"{% if '0' == payment_multisafepay_order_status_id_initialized %} selected {% endif %}>{{ text_do_nothing }}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            {# -- Set Completed Status -- #}
+                            <div class="form-group group-id row mb-3">
+                                <label class="col-sm-2 col-form-label" for="payment-multisafepay-order-status-id-completed">{{ entry_order_status_id_completed }}</label>
+                                <div class="col-sm-10">
+                                    <div class="input-group">
+                                        <select name="payment_multisafepay_order_status_id_completed" id="payment-multisafepay-order-status-id-completed" class="form-select">
+                                            {% for order_status in order_statuses %}
+                                                <option value="{{ order_status['order_status_id'] }}"{% if order_status['order_status_id'] == payment_multisafepay_order_status_id_completed %} selected {% endif %}>{{ order_status['name'] }}</option>
+                                            {% endfor %}
+                                            <option value="0"{% if '0' == payment_multisafepay_order_status_id_completed %} selected {% endif %}>{{ text_do_nothing }}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            {# -- Set Uncleared Status -- #}
+                            <div class="form-group group-id row mb-3">
+                                <label class="col-sm-2 col-form-label" for="payment-multisafepay-order-status-id-uncleared">{{ entry_order_status_id_uncleared }}</label>
+                                <div class="col-sm-10">
+                                    <div class="input-group">
+                                        <select name="payment_multisafepay_order_status_id_uncleared" id="payment-multisafepay-order-status-id-uncleared" class="form-select">
+                                            {% for order_status in order_statuses %}
+                                                <option value="{{ order_status['order_status_id'] }}"{% if order_status['order_status_id'] == payment_multisafepay_order_status_id_uncleared %} selected {% endif %}>{{ order_status['name'] }}</option>
+                                            {% endfor %}
+                                            <option value="0"{% if '0' == payment_multisafepay_order_status_id_uncleared %} selected {% endif %}>{{ text_do_nothing }}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            {# -- Set Reserved Status -- #}
+                            <div class="form-group group-id row mb-3">
+                                <label class="col-sm-2 col-form-label" for="payment-multisafepay-order-status-id-reserved">{{ entry_order_status_id_reserved }}</label>
+                                <div class="col-sm-10">
+                                    <div class="input-group">
+                                        <select name="payment_multisafepay_order_status_id_reserved" id="payment-multisafepay-order-status-id-reserved" class="form-select">
+                                            {% for order_status in order_statuses %}
+                                                <option value="{{ order_status['order_status_id'] }}"{% if order_status['order_status_id']== payment_multisafepay_order_status_id_reserved %} selected {% endif %}>{{ order_status['name'] }}</option>
+                                            {% endfor %}
+                                            <option value="0"{% if '0' == payment_multisafepay_order_status_id_reserved %} selected {% endif %}>{{ text_do_nothing }}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            {# -- Set Void Status -- #}
+                            <div class="form-group group-id row mb-3">
+                                <label class="col-sm-2 col-form-label" for="payment-multisafepay-order-status-id-void">{{ entry_order_status_id_void }}</label>
+                                <div class="col-sm-10">
+                                    <div class="input-group">
+                                        <select name="payment_multisafepay_order_status_id_void" id="payment-multisafepay-order-status-id-void" class="form-select">
+                                            {% for order_status in order_statuses %}
+                                                <option value="{{ order_status['order_status_id'] }}"{% if order_status['order_status_id'] == payment_multisafepay_order_status_id_void %} selected {% endif %}>{{ order_status['name'] }}</option>
+                                            {% endfor %}
+                                            <option value="0"{% if '0' == payment_multisafepay_order_status_id_void %} selected {% endif %}>{{ text_do_nothing }}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            {# -- Set Declined Status -- #}
+                            <div class="form-group group-id row mb-3">
+                                <label class="col-sm-2 col-form-label" for="payment-multisafepay-order-status-id-declined">{{ entry_order_status_id_declined }}</label>
+                                <div class="col-sm-10">
+                                    <div class="input-group">
+                                        <select name="payment_multisafepay_order_status_id_declined" id="payment-multisafepay-order-status-id-declined" class="form-select">
+                                            {% for order_status in order_statuses %}
+                                                <option value="{{ order_status['order_status_id'] }}"{% if order_status['order_status_id'] == payment_multisafepay_order_status_id_declined %} selected {% endif %}>{{ order_status['name'] }}</option>
+                                            {% endfor %}
+                                            <option value="0"{% if '0' == payment_multisafepay_order_status_id_declined %} selected {% endif %}>{{ text_do_nothing }}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            {# -- Set Expired Status -- #}
+                            <div class="form-group group-id row mb-3">
+                                <label class="col-sm-2 col-form-label" for="payment-multisafepay-order-status-id-expired">{{ entry_order_status_id_expired }}</label>
+                                <div class="col-sm-10">
+                                    <div class="input-group">
+                                        <select name="payment_multisafepay_order_status_id_expired" id="payment-multisafepay-order-status-id-expired" class="form-select">
+                                            {% for order_status in order_statuses %}
+                                                <option value="{{ order_status['order_status_id'] }}"{% if order_status['order_status_id'] == payment_multisafepay_order_status_id_expired %} selected {% endif %}>{{ order_status['name'] }}</option>
+                                            {% endfor %}
+                                            <option value="0"{% if '0' == payment_multisafepay_order_status_id_expired %} selected {% endif %}>{{ text_do_nothing }}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            {# -- Set Shipped Status -- #}
+                            <div class="form-group group-id row mb-3">
+                                <label class="col-sm-2 col-form-label" for="payment-multisafepay-order-status-id-shipped">{{ entry_order_status_id_shipped }}</label>
+                                <div class="col-sm-10">
+                                    <div class="input-group">
+                                        <select name="payment_multisafepay_order_status_id_shipped" id="payment-multisafepay-order-status-id-shipped" class="form-select">
+                                            {% for order_status in order_statuses %}
+                                                <option value="{{ order_status['order_status_id'] }}"{% if order_status['order_status_id'] == payment_multisafepay_order_status_id_shipped %} selected {% endif %}>{{ order_status['name'] }}</option>
+                                            {% endfor %}
+                                            <option value="0"{% if '0' == payment_multisafepay_order_status_id_shipped %} selected {% endif %}>{{ text_do_nothing }}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            {# -- Set Refunded Status -- #}
+                            <div class="form-group group-id row mb-3">
+                                <label class="col-sm-2 col-form-label" for="payment-multisafepay-order-status-id-refunded">{{ entry_order_status_id_refunded }}</label>
+                                <div class="col-sm-10">
+                                    <div class="input-group">
+                                        <select name="payment_multisafepay_order_status_id_refunded" id="payment-multisafepay-order-status-id-refunded" class="form-select">
+                                            {% for order_status in order_statuses %}
+                                                <option value="{{ order_status['order_status_id'] }}"{% if order_status['order_status_id'] == payment_multisafepay_order_status_id_refunded %} selected {% endif %}>{{ order_status['name'] }}</option>
+                                            {% endfor %}
+                                            <option value="0"{% if '0' == payment_multisafepay_order_status_id_refunded %} selected {% endif %}>{{ text_do_nothing }}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            {# -- Set Partial Refunded Status -- #}
+                            <div class="form-group group-id row mb-3">
+                                <label class="col-sm-2 col-form-label" for="payment-multisafepay-order-status-id-partial-refunded">{{ entry_order_status_id_partial_refunded }}</label>
+                                <div class="col-sm-10">
+                                    <div class="input-group">
+                                        <select name="payment_multisafepay_order_status_id_partial_refunded" id="payment-multisafepay-order-status-id-partial-refunded" class="form-select">
+                                            {% for order_status in order_statuses %}
+                                                <option value="{{ order_status['order_status_id'] }}"{% if order_status['order_status_id'] == payment_multisafepay_order_status_id_partial_refunded %} selected {% endif %}>{{ order_status['name'] }}</option>
+                                            {% endfor %}
+                                            <option value="0"{% if '0' == payment_multisafepay_order_status_id_partial_refunded %} selected {% endif %}>{{ text_do_nothing }}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            {# -- Set Cancelled Status -- #}
+                            <div class="form-group group-id row mb-3">
+                                <label class="col-sm-2 col-form-label" for="payment-multisafepay-order-status-id-cancelled">{{ entry_order_status_id_cancelled }}</label>
+                                <div class="col-sm-10">
+                                    <div class="input-group">
+                                        <select name="payment_multisafepay_order_status_id_cancelled" id="payment-multisafepay-order-status-id-cancelled" class="form-select">
+                                            {% for order_status in order_statuses %}
+                                                <option value="{{ order_status['order_status_id'] }}"{% if order_status['order_status_id'] == payment_multisafepay_order_status_id_cancelled %} selected {% endif %}>{{ order_status['name'] }}</option>
+                                            {% endfor %}
+                                            <option value="0"{% if '0' == payment_multisafepay_order_status_id_cancelled %} selected {% endif %}>{{ text_do_nothing }}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {# -- Tab Payment Methods -- #}
+                        <div class="tab-pane" id="tab-payment-methods">
+                            <div class="well payment-methods-filter-panel">
+                                <div class="row">
+                                    <div class="col col-sm">
+                                        <div class="input-group">
+                                            <label for="input-filter-payment-method"></label>
+                                            <select name="filter_payment_method" id="input-filter-payment-method" class="form-select">
+                                                <option value="*">{{ text_show_all_payment_methods }}</option>
+                                                <option value="gateway">{{ text_show_gateways }}</option>
+                                                <option value="giftcard">{{ text_show_gift_cards }}</option>
+                                                <option value="generic">{{ text_show_generic }}</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="dragula-container" class="row mb-3">
+                                <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+                                    {% for gateway in gateways %}
+                                        <div class="panel panel-default payment-method-panel payment-type-{{ gateway['type'] }}">
+                                            <div class="panel-heading" role="tab" id="heading-payment-method-{{ gateway['code'] }}">
+                                                <h4 class="panel-title">
+                                                    <div class="row p-0 m-0 pr-0 w-100">
+                                                        <div class="col-1 p-0 m-0 enable-disable-payment background-gray-icon">
+                                                            <div class="status{% if payment_methods_fields_values[gateway['code']]['status'] == 1 %} active{% endif %}"></div>
+                                                        </div>
+                                                        <div class="col p-0 m-0">
+                                                            <a role="button" data-bs-toggle="collapse" data-parent="#accordion" data-bs-target="#payment-method-{{ gateway['code'] }}" aria-expanded="true" aria-controls="payment-method-{{ gateway['code'] }}" class="collapsed">
+                                                                <span class="drag-and-drop-control" data-bs-toggle="tooltip" title="" data-original-title="{{ text_help_drag_and_drop }}"></span>
+                                                                <span class="title">
+                                                                    {{ gateway['description'] }}
+                                                                </span>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </h4>
+                                            </div>
+                                            <div class="panel-collapse collapse border border-top-0 mb-2" role="tabpanel" id="payment-method-{{ gateway['code'] }}"  aria-labelledby="heading-payment-method-{{ gateway['code'] }}">
+                                                <div class="panel-body">
+                                                    <div class="gateway-info">
+                                                        {% if gateway['brief_description'] %}
+                                                            <div class="row">
+                                                                <div class="col gateway-info-description">
+                                                                    {{ gateway['brief_description'] }}
+                                                                </div>
+                                                            </div>
+                                                            <hr>
+                                                        {% endif %}
+                                                    </div>
+                                                    {# -- Status -- #}
+                                                    <div class="form-group group-id row mb-3">
+                                                        <label class="col-sm-2 col-form-label" for="payment-multisafepay-{{ gateway['code'] }}-status">{{ entry_status }}</label>
+                                                        <div class="col-sm-10">
+                                                            <div class="input-group">
+                                                                <select name="payment_multisafepay_{{ gateway['code'] }}_status" id="payment-multisafepay-{{ gateway['code'] }}-status" class="form-select">
+                                                                    <option value="0" {% if payment_methods_fields_values[gateway['code']]['status'] == 0 %} selected {% endif %}>{{ text_disabled }}</option>
+                                                                    <option value="1" {% if payment_methods_fields_values[gateway['code']]['status'] == 1 %} selected {% endif %}>{{ text_enabled }}</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    {# --  Payment Component -- #}
+                                                    {% if gateway['id'] in configurable_payment_component %}
+                                                        <div class="form-group group-id row mb-3">
+                                                            <label class="col-sm-2 col-form-label" for="payment-multisafepay-{{ gateway['code'] }}-payment-component">{{ entry_payment_component }}</label>
+                                                            <div class="col-sm-10">
+                                                                <div class="input-group">
+                                                                    <select name="payment_multisafepay_{{ gateway['code'] }}_payment_component" id="payment-multisafepay-{{ gateway['code'] }}-payment-component" class="form-select">
+                                                                        <option value="0" {% if payment_methods_fields_values[gateway['code']]['payment_component'] == 0 %} selected {% endif %}>{{ text_disabled }}</option>
+                                                                        <option value="1" {% if payment_methods_fields_values[gateway['code']]['payment_component'] == 1 %} selected {% endif %}>{{ text_enabled }}</option>
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    {% endif %}
+                                                    {# --  Tokenization -- #}
+                                                    {% if gateway['id'] in configurable_tokenization %}
+                                                        <div class="form-group group-id row mb-3" id="payment-multisafepay-{{ gateway['code'] }}-display-tokenization-field" style="display:none;">
+                                                            <div id="payment-multisafepay-{{ gateway['code'] }}-tokenization-field" data-gateway="{{ gateway['code'] }}" class="col">
+                                                                <div class="form-group group-id row mb-3">
+                                                                    <label class="col-sm-2 col-form-label" for="payment-multisafepay-{{ gateway['code'] }}-tokenization">{{ entry_tokenization }}</label>
+                                                                    <div class="col-sm-10">
+                                                                        <div class="input-group">
+                                                                            <select name="payment_multisafepay_{{ gateway['code'] }}_tokenization" id="payment-multisafepay-{{ gateway['code'] }}-tokenization" class="form-select">
+                                                                                <option value="0" {% if payment_methods_fields_values[gateway['code']]['tokenization'] == 0 %} selected {% endif %}>{{ text_disabled }}</option>
+                                                                                <option value="1" {% if payment_methods_fields_values[gateway['code']]['tokenization'] == 1 %} selected {% endif %}>{{ text_enabled }}</option>
+                                                                            </select>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    {% endif %}
+                                                    {% if gateway['type'] == 'generic' %}
+                                                        <div class="form-group group-id row mb-3">
+                                                            <label class="col-sm-2 col-form-label" for="payment-multisafepay-{{ gateway['code'] }}-name">{{ entry_name }}</label>
+                                                            <div class="col-sm-10">
+                                                                <div class="input-group">
+                                                                    <input type="text" name="payment_multisafepay_{{ gateway['code'] }}_name" value="{{ payment_generic_fields_values[gateway['code']]['name'] }}" id="payment-multisafepay-{{ gateway['code'] }}-name" placeholder="{{ entry_name }}" class="form-control" />
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="form-group group-id row mb-3">
+                                                            <label class="col-sm-2 col-form-label" for="payment-multisafepay-{{ gateway['code'] }}-code">{{ entry_code }}</label>
+                                                            <div class="col-sm-10">
+                                                                <div class="input-group">
+                                                                    <input type="text" name="payment_multisafepay_{{ gateway['code'] }}_code" value="{{ payment_generic_fields_values[gateway['code']]['code'] }}" id="payment-multisafepay-{{ gateway['code'] }}-code" placeholder="{{ entry_code }}" class="form-control" />
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="form-group group-id row mb-3">
+                                                            <label class="col-sm-2 col-form-label" for="payment-multisafepay-{{ gateway['code'] }}-require-shopping-cart"><span data-bs-toggle="tooltip" title="" data-original-title="{{ text_help_require_shopping_cart }}">{{ entry_require_shopping_cart }}</span></label>
+                                                            <div class="col-sm-10">
+                                                                <div class="input-group">
+                                                                    <select name="payment_multisafepay_{{ gateway['code'] }}_require_shopping_cart" id="payment-multisafepay-{{ gateway['code'] }}-require-shopping-cart" class="form-select">
+                                                                        <option value="0" {% if payment_generic_fields_values[gateway['code']]['require_shopping_cart'] == 0 %} selected {% endif %}>{{ text_disabled }}</option>
+                                                                        <option value="1" {% if payment_generic_fields_values[gateway['code']]['require_shopping_cart'] == 1 %} selected {% endif %}>{{ text_enabled }}</option>
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    {% endif %}
+                                                    {# -- Min Amount -- #}
+                                                    <div class="form-group group-id row mb-3">
+                                                        <label class="col-sm-2 col-form-label" for="payment-multisafepay-{{ gateway['code'] }}-min-amount"><span data-bs-toggle="tooltip" title="" data-original-title="{{ text_help_min_amount }}">{{ entry_min_amount }}</span></label>
+                                                        <div class="col-sm-10">
+                                                            <div class="input-group">
+                                                                <input type="text" name="payment_multisafepay_{{ gateway['code'] }}_min_amount" value="{{ payment_methods_fields_values[gateway['code']]['min_amount'] }}" id="payment-multisafepay-{{ gateway['code'] }}-min-amount" placeholder="{{ entry_min_amount }}" class="form-control" />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    {# -- Max Amount -- #}
+                                                    <div class="form-group group-id row mb-3">
+                                                        <label class="col-sm-2 col-form-label" for="payment-multisafepay-{{ gateway['code'] }}-max-amount"><span data-bs-toggle="tooltip" title="" data-original-title="{{ text_help_max_amount }}">{{ entry_max_amount }}</span></label>
+                                                        <div class="col-sm-10">
+                                                            <div class="input-group">
+                                                                <input type="text" name="payment_multisafepay_{{ gateway['code'] }}_max_amount" value="{{ payment_methods_fields_values[gateway['code']]['max_amount'] }}" id="payment-multisafepay-{{ gateway['code'] }}-max-amount" placeholder="{{ entry_max_amount }}" class="form-control" />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    {# -- Currency -- #}
+                                                    <div class="form-group group-id row mb-3">
+                                                        <label class="col-sm-2 col-form-label" for="payment-multisafepay-{{ gateway['code'] }}-currency"><span data-bs-toggle="tooltip" title="{{ text_help_currency }}">{{ entry_currency }}</span></label>
+                                                        <div class="col-sm-10">
+                                                            <div class="well well-sm multiple-select" style="height: 153px; overflow: auto;">
+                                                                {% for currency in currencies %}
+                                                                    <div class="input-group">
+                                                                        <div class="checkbox">
+                                                                            <label>
+                                                                                {% if currency['currency_id'] in payment_methods_fields_values[gateway['code']]['currency'] %}
+                                                                                    <input type="checkbox" name="payment_multisafepay_{{ gateway['code'] }}_currency[]" value="{{ currency['currency_id'] }}" checked="checked" />
+                                                                                    {{ currency['title'] }} ({{ currency['code'] }})
+                                                                                {% else %}
+                                                                                    <input type="checkbox" name="payment_multisafepay_{{ gateway['code'] }}_currency[]" value="{{ currency['currency_id'] }}" />
+                                                                                    {{ currency['title'] }} ({{ currency['code'] }})
+                                                                                {% endif %}
+                                                                            </label>
+                                                                        </div>
+                                                                    </div>
+                                                                {% endfor %}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    {# -- Customer Groups -- #}
+                                                    <div class="form-group group-id row mb-3">
+                                                        <label class="col-sm-2 col-form-label"><span data-bs-toggle="tooltip" title="{{ text_help_customer_group }}">{{ entry_customer_group }}</span></label>
+                                                        <div class="col-sm-10">
+                                                            <div class="well well-sm multiple-select" style="height: 150px; overflow: auto;">
+                                                                {% for customer_group in customer_groups %}
+                                                                    <div class="input-group">
+                                                                        <div class="checkbox">
+                                                                            <label>
+                                                                                {% if customer_group['customer_group_id'] in payment_methods_fields_values[gateway['code']]['customer_group_id'] %}
+                                                                                    <input type="checkbox" name="payment_multisafepay_{{ gateway['code'] }}_customer_group_id[]" value="{{ customer_group['customer_group_id'] }}" checked="checked" />
+                                                                                    {{ customer_group['name'] }}
+                                                                                {% else %}
+                                                                                    <input type="checkbox" name="payment_multisafepay_{{ gateway['code'] }}_customer_group_id[]" value="{{ customer_group['customer_group_id'] }}" />
+                                                                                    {{ customer_group['name'] }}
+                                                                                {% endif %}
+                                                                            </label>
+                                                                        </div>
+                                                                    </div>
+                                                                {% endfor %}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    {# -- Geo-Zone -- #}
+                                                    <div class="form-group group-id row mb-3">
+                                                        <label class="col-sm-2 col-form-label" for="payment-multisafepay-{{ gateway['code'] }}-geo-zone-id">{{ entry_geo_zone }}</label>
+                                                        <div class="col-sm-10">
+                                                            <div class="input-group">
+                                                                <select name="payment_multisafepay_{{ gateway['code'] }}_geo_zone_id" id="payment-multisafepay-{{ gateway['code'] }}-geo-zone-id" class="form-select">
+                                                                    <option value="0">{{ text_all_zones }}</option>
+                                                                    {% for geo_zone in geo_zones %}
+                                                                        <option value="{{ geo_zone['geo_zone_id'] }}"{% if geo_zone['geo_zone_id'] == payment_methods_fields_values[gateway['code']]['geo_zone_id'] %} selected {% endif %}>{{ geo_zone['name'] }}</option>
+                                                                    {% endfor %}
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    {# -- Custom Initialized Status -- #}
+                                                    <div class="form-group group-id row mb-3">
+                                                        <label class="col-sm-2 col-form-label" for="payment-multisafepay-{{ gateway['code'] }}-order-status-id-initialized">{{ entry_order_status_id_initialized }}</label>
+                                                        <div class="col-sm-10">
+                                                            <div class="input-group">
+                                                                <select name="payment_multisafepay_{{ gateway['code'] }}_order_status_id_initialized" id="payment-multisafepay-{{ gateway['code'] }}-order-status-id-initialized" class="form-select">
+                                                                    <option value="0"{% if '0' == payment_methods_fields_values[gateway['code']]['order_status_id_initialized'] %} selected {% endif %}>{{ text_order_status_id_initialized_default }}</option>
+                                                                    {% for order_status in order_statuses %}
+                                                                        <option value="{{ order_status['order_status_id'] }}"{% if order_status['order_status_id'] == payment_methods_fields_values[gateway['code']]['order_status_id_initialized'] %} selected {% endif %}>{{ order_status['name'] }}</option>
+                                                                    {% endfor %}
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    {# -- Switch to Redirect -- #}
+                                                    {% if gateway['redirect_switch'] %}
+                                                        <div class="form-group group-id row mb-3">
+                                                            <label class="col-sm-2 col-form-label" for="payment-multisafepay-{{ gateway['code'] }}-redirect">{{ entry_redirect_switch }}</label>
+                                                            <div class="col-sm-10">
+                                                                <div class="input-group">
+                                                                    <select name="payment_multisafepay_{{ gateway['code'] }}_redirect" id="payment-multisafepay-{{ gateway['code'] }}-redirect" class="form-select">
+                                                                        <option value="0" {% if payment_methods_fields_values[gateway['code']]['redirect'] == 0 %} selected {% endif %}>{{ text_disabled }}</option>
+                                                                        <option value="1" {% if payment_methods_fields_values[gateway['code']]['redirect'] == 1 %} selected {% endif %}>{{ text_enabled }}</option>
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    {% endif %}
+                                                    {# -- Sort Order -- #}
+                                                    <div class="form-group group-id row mb-3">
+                                                        <label class="col-sm-2 col-form-label" for="payment-multisafepay-{{ gateway['code'] }}-sort-order">{{ entry_sort_order }}</label>
+                                                        <div class="col-sm-10">
+                                                            <div class="input-group">
+                                                                <input type="text" name="payment_multisafepay_{{ gateway['code'] }}_sort_order" value="{{ payment_methods_fields_values[gateway['code']]['sort_order'] }}" id="payment-multisafepay-{{ gateway['code'] }}-sort-order" placeholder="{{ entry_sort_order }}" class="form-control sort-order" />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        {# -- Tab Support -- #}
+                        <div class="tab-pane px-4" id="tab-support">
+                            <div id="multisafepay-support" class="multisafepay-support-information">
+                                <table id="version-table">
+                                    <tr class="no-padding-top">
+                                        <td class="version-table-row">
+                                            {{ text_row_title_multisafepay_version }}
+                                        </td>
+                                        <td class="version-table-row">
+                                            <span class="multisafepay-bold">{{ text_row_value_multisafepay_version }}</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="version-table-row">
+                                            {{ text_row_title_multisafepay_version_oc_supported }}
+                                        </td>
+                                        <td class="version-table-row multisafepay-bold">
+                                            {{ text_row_value_multisafepay_version_oc_supported }}
+                                        </td>
+                                    </tr>
+                                </table>
+                                <br />
+                                <h2 id="multisafepay-title">{{ text_title_documentation }}</h2>
+                                <p>{{ text_read_more_documentation }}</p>
+                                <ul>
+                                    <li>
+                                        {{ text_manual_link }}
+                                    </li>
+                                    <li>
+                                        {{ text_changelog_link }}
+                                    </li>
+                                    <li>
+                                        {{ text_faq_link }}
+                                    </li>
+                                </ul>
+                                <p>{{ text_read_more_documentation_developers }}</p>
+                                <ul>
+                                    <li>
+                                        {{ text_api_documentation_link }}
+                                    </li>
+                                    <li>
+                                        {{ text_multisafepay_github_link }}
+                                    </li>
+                                </ul>
+                                <h2 id="multisafepay-title">{{ text_title_account }}</h2>
+                                <p>
+                                    {{ text_need_account }}
+                                </p>
+                                <ul>
+                                    <li>{{ text_create_test_account }}</li>
+                                    <li>{{ text_create_live_account }}
+                                        <ul  class="multisafepay-sales-contact-list">
+                                            <li><strong>{{ text_country_netherlands }}</strong>
+                                                <ul>
+                                                    <li>
+                                                        {{ text_sales_telephone_netherlands }}
+                                                    </li>
+                                                    <li>
+                                                        {{ text_sales_email_netherlands }}
+                                                    </li>
+                                                </ul>
+                                            </li>
+                                            <li><strong>{{ text_country_belgium }}</strong>
+                                                <ul>
+                                                    <li>
+                                                        {{ text_sales_telephone_belgium }}
+                                                    </li>
+                                                    <li>
+                                                        {{ text_sales_email_belgium }}
+                                                    </li>
+                                                </ul>
+                                            </li>
+                                            <li><strong>{{ text_country_spain }}</strong>
+                                                <ul>
+                                                    <li>
+                                                        {{ text_sales_telephone_spain }}
+                                                    </li>
+                                                    <li>
+                                                        {{ text_sales_email_spain }}
+                                                    </li>
+                                                </ul>
+                                            </li>
+                                            <li><strong>{{ text_country_italy }}</strong>
+                                                <ul>
+                                                    <li>
+                                                        {{ text_sales_telephone_italy }}
+                                                    </li>
+                                                    <li>
+                                                        {{ text_sales_email_italy }}
+                                                    </li>
+                                                </ul>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                                <h2 id="multisafepay-title">{{ text_title_contact }}</h2>
+                                <p>
+                                    {{ text_contact_assistance_text }}
+                                </p>
+                                <ul>
+                                    <li>
+                                        {{ text_assistance_telephone }}
+                                    </li>
+                                    <li>
+                                        {{ text_assistance_email }}
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{{ footer }}

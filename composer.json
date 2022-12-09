@@ -1,0 +1,31 @@
+{
+    "name": "multisafepay/opencart-plugin",
+    "description": "MultiSafepay OpenCart Plugin",
+    "type": "opencart-plugin",
+    "license": "MIT",
+    "require": {
+        "php": "^8.0",
+        "ext-json": "*",
+        "multisafepay/php-sdk": "^5.6.0",
+        "nyholm/psr7": "^1.5.1"
+    },
+    "provide": {
+        "psr/http-client-implementation": "1.0"
+    },
+    "authors": [{
+        "name": "MultiSafepay",
+        "email": "integration@multisafepay.com",
+        "homepage": "https://www.multisafepay.com",
+        "role": "Developer"
+    }],
+    "autoload": {
+        "psr-4": {
+            "Opencart\\": "./"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
+    }
+}

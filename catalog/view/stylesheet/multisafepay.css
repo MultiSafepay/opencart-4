@@ -1,0 +1,16 @@
+.msp-container-ui.msp-embed-mode {
+    max-width: 100% !important;
+}
+div.required .mandatory-field:before {
+    content: '* ';
+    color: #F00;
+    font-weight: bold;
+}
+#multisafepay-form label {
+    display: inline !important;
+}
+#multisafepay-form input[type=checkbox] {
+    vertical-align: text-top;
+    margin-right: 4px;
+}
+

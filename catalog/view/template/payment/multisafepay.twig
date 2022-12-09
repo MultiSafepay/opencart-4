@@ -1,0 +1,346 @@
+{% if test_mode %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert"><i class="fas fa-exclamation-circle"></i>&nbsp;&nbsp;{{ text_testmode }}</div>
+{% endif %}
+<form action="{{ action }}" method="post" class="form-horizontal" id="multisafepay-form">
+    <input type="hidden" name="order_id" value="{{ order_id }}" />
+    <input type="hidden" name="type" value="{{ type }}" />
+    {% if gateway %}
+        <input type="hidden" name="gateway" value="{{ gateway }}" />
+    {% endif %}
+    {% if gateway_info %}
+        <input type="hidden" name="gateway_info" value="{{ gateway_info }}" />
+    {% endif %}
+    {% if fields.payment_component_enabled %}
+        <input type="hidden" name="payload" value="" />
+    {% endif %}
+    {% if issuers %}
+        <fieldset>
+            <legend>{{ text_legend }}</legend>
+            <div class="form-group mb-4">
+                <div class="container">
+                    <div class="row justify-content-center">
+                        <div class="col-1 pt-1" style="width:45px">
+                            {{ entry_issuer }}
+                        </div>
+                        <div class="col">
+                            <label>
+                                <select name="issuer_id" class="form-control gateways-with-issuers" style="width:100%">
+                                    <option value="">{{ text_select }}</option>
+                                    {% for issuer in issuers %}
+                                    <option value="{{ issuer.code }}">{{ issuer.description }}</option>
+                                    {% endfor %}
+                                </select>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+    {% endif %}
+    {% if fields %}
+        <fieldset>
+            <legend>{{ text_legend }}</legend>
+            {% if fields.payment_component_enabled %}
+            <div id="multisafepay-payment"></div>
+            {% endif %}
+            {% if fields.gender %}
+                <div class="form-group required form-group-gender mb-4">
+                    <div class="container pl-0 ml-0 mt-3">
+                        <div class="row justify-content-center">
+                            <div class="col-1 mandatory-field text-end p-0 mt-1 pt-2" style="width:95px;">
+                                {{ entry_gender }}
+                            </div>
+                            <div class="col">
+                                <div class="input-group">
+                                    <select name="gender" id="input-gender" class="form-control">
+                                        <option value="">{{ text_select }}</option>
+                                        <option value="mr">{{ text_mr }}</option>
+                                        <option value="mrs">{{ text_mrs }}</option>
+                                        <option value="miss">{{ text_miss }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            {% if fields.sex %}
+                <div class="form-group required form-group-gender mb-4">
+                    <div class="container pl-0 ml-0 mt-3">
+                        <div class="row justify-content-center">
+                            <div class="col-1 mandatory-field text-end p-0 mt-1 pt-2" style="width:115px;">
+                                {{ entry_gender }}
+                            </div>
+                            <div class="col">
+                                <div class="input-group">
+                                    <select name="gender" id="input-gender" class="form-control">
+                                        <option value="">{{ text_select }}</option>
+                                        <option value="male">{{ text_mr }}</option>
+                                        <option value="female">{{ text_mrs }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            {% if fields.birthday %}
+                <div class="form-group required form-group-birthday mb-4">
+                    <div class="container pl-0 ml-0 mt-3">
+                        <div class="row justify-content-center">
+                            <div class="col-1 mandatory-field text-end p-0 mt-1 pt-2" style="{% if fields.bankaccount %}width:115px;{% else %}width:95px;{% endif %}">
+                                {{ entry_date_of_birth }}
+                            </div>
+                            <div class="col">
+                                <div class="input-group">
+                                    <label for="input-birthday"></label>
+                                    <input type="text" name="birthday" value="" placeholder="{{ placeholder_date_of_birth }}" id="input-birthday" data-date-format="YYYY-MM-DD" class="form-control" />
+                                    <span class="input-group-btn">
+                                        <button type="button" id="date-range-picker-icon" class="btn btn-default"><i class="fas fa-calendar"></i></button>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            {% if fields.bankaccount %}
+                <div class="form-group required form-group-bankaccount mb-4">
+                    <div class="container pl-0 ml-0 mt-3">
+                        <div class="row justify-content-center">
+                            <div class="col-1 mandatory-field text-end p-0 mt-1 pt-2" style="width:115px;">
+                                {{ entry_bank_account }}
+                            </div>
+                            <div class="col">
+                                <label for="input-bankaccount"></label>
+                                <input type="text" name="bankaccount" value="" placeholder="{{ placeholder_bank_account }}" id="input-bankaccount" class="form-control" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            {% if fields.account_holder_name %}
+                <div class="form-group required form-group-account-holder-name mb-4">
+                    <div class="container pl-0 ml-0 mt-3">
+                        <div class="row justify-content-center">
+                            <div class="col-1 mandatory-field text-end p-0 mt-1 pt-2" style="width:95px;">
+                                {{ entry_account_holder_name }}
+                            </div>
+                            <div class="col">
+                                <label for="input-account-holder-name"></label>
+                                <input type="text" name="account_holder_name" value="" placeholder="{{ entry_account_holder_name }}" id="input-account-holder-name" class="form-control" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            {% if fields.account_holder_iban %}
+                <div class="form-group required form-group-account-holder-iban mb-4">
+                    <div class="container pl-0 ml-0 mt-3">
+                        <div class="row justify-content-center">
+                            <div class="col-1 mandatory-field text-end p-0 mt-1 pt-2" style="width:95px;">
+                                {{ entry_account_holder_iban }}
+                            </div>
+                            <div class="col">
+                                <label for="input-account-holder-iban"></label>
+                                <input type="text" name="account_holder_iban" value="" placeholder="{{ placeholder_account_holder_iban }}" id="input-account-holder-iban" class="form-control" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            {% if fields.afterpay_terms %}
+                <div class="form-group required form-group-afterpay-terms mb-4">
+                    <div class="container pl-0 ml-0 mt-3">
+                        <div class="row justify-content-center">
+                            <div class="col-1"></div>
+                            <div class="col text-center">
+                                <label>
+                                    <input type="checkbox" name="afterpay_terms" value="0"> {{ entry_afterpay_terms }}
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            {% if fields.emandate %}
+                <input type="hidden" name="emandate" value="{{ order_id }}" />
+            {% endif %}
+        </fieldset>
+    {% endif %}
+    <div class="buttons">
+        <div class="float-end">
+            <input id="button-confirm" type="submit" value="{{ button_confirm }}" class="btn btn-primary" />
+        </div>
+    </div>
+</form>
+
+{% if gateway == 'AFTERPAY' %}
+    <script type="text/javascript"><!--
+        $(document).ready(function() {
+            $('.form-group-afterpay-terms input').on('change', function() {
+                $('.form-group-afterpay-terms input').val(this.checked ? 1 : 0);
+            });
+        });
+        //--></script>
+{% endif %}
+{% if gateway == 'APPLEPAY' %}
+    <script type="text/javascript"><!--
+        $(document).ready(function() {
+            if (window.ApplePaySession && ApplePaySession.canMakePayments()) {
+                $('#button-confirm').prop('disabled', false);
+            } else {
+                $('#multisafepay-form').prepend('<div class="alert alert-danger alert-dismissible fade show" role="alert"><i class="fas fa-exclamation-circle"></i>&nbsp;&nbsp;{{ text_error_apple_pay }}</div>');
+                $('#button-confirm').prop('disabled', true);
+            }
+        });
+        //--></script>
+{% endif %}
+{% if gateway == 'GOOGLEPAY' %}
+    <script type="text/javascript"><!--
+        let paymentsClient = null;
+
+        const baseRequest = {
+            apiVersion: 2,
+            apiVersionMinor: 0
+        };
+
+        const allowedCardNetworks = ['MASTERCARD', 'VISA'];
+        const allowedCardAuthMethods = ['CRYPTOGRAM_3DS', 'PAN_ONLY'];
+
+        const baseCardPaymentMethod = {
+            type: 'CARD',
+            parameters: {
+                allowedAuthMethods: allowedCardAuthMethods,
+                allowedCardNetworks: allowedCardNetworks
+            }
+        };
+
+        function getGooglePaymentsClient() {
+            if (paymentsClient === null) {
+                paymentsClient = new google.payments.api.PaymentsClient({
+                    environment: '{{ mode_string }}'
+                });
+            }
+            return paymentsClient;
+        }
+
+        function getGoogleIsReadyToPayRequest() {
+            return Object.assign({},
+                baseRequest, {
+                    allowedPaymentMethods: [baseCardPaymentMethod]
+                }
+            );
+        }
+
+        function onGooglePayLoaded() {
+            const paymentsClient = getGooglePaymentsClient();
+            paymentsClient.isReadyToPay(getGoogleIsReadyToPayRequest())
+                .then(function(response) {
+                    if (response.result) {
+                        $('#button-confirm').prop('disabled', false);
+                    } else {
+                        $('#multisafepay-form').prepend('<div class="alert alert-danger alert-dismissible fade show"><i class="fas fa-exclamation-circle"></i>&nbsp;&nbsp;{{ text_error_google_pay }}</div>');
+                        $('#button-confirm').prop('disabled', true);
+                    }
+                })
+                .catch(function(err) {
+                    console.error(err);
+                });
+        }
+
+        $(document).ready(function() {
+            if (window.PaymentRequest) {
+                onGooglePayLoaded();
+            } else {
+                $('#multisafepay-form').prepend('<div class="alert alert-danger alert-dismissible fade show"><i class="fas fa-exclamation-circle"></i>&nbsp;&nbsp;Please, use the secure context of your browser [HTTPS]. Thanks.</div>');
+                $('#button-confirm').prop('disabled', true);
+            }
+        });
+        //--></script>
+{% endif %}
+{% if fields.birthday %}
+    <script type="text/javascript"><!--
+        $('#date-range-picker-icon').on('click', function(event) {
+            event.preventDefault();
+            $('input[name="birthday"]').daterangepicker({
+                'singleDatePicker': true,
+                'autoApply': true,
+                'showDropdowns': true,
+                'locale': {
+                    'format': 'YYYY-MM-DD'
+                },
+                'minYear': 1920,
+                'maxYear': parseInt(moment().format('YYYY'), 10)
+            }).trigger('click');
+        });
+    //--></script>
+{% endif %}
+{% if fields %}
+    <script type="text/javascript"><!--
+        $(document).ready(function() {
+            $('#multisafepay-form').on('click', '#button-confirm', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                $.ajax({
+                    'url': 'index.php?route=extension/multisafepay/payment/multisafepay|validateForm',
+                    type: 'post',
+                    data: $('#multisafepay-form :input, #multisafepay-form select'),
+                    dataType: 'json',
+                    cache: false,
+                    beforeSend: function() {
+                        $('#multisafepay-form .alert-danger').remove();
+                        $('#multisafepay-form .text-danger').remove();
+                        $('#multisafepay-form .form-group').removeClass('has-error');
+                        $('#button-confirm').button('loading');
+                    },
+                    complete: function() {
+                        $('#button-confirm').button('reset');
+                    },
+                    success: function(json) {
+                        if (!json['error']) {
+                            $("#multisafepay-form").submit();
+                        }
+                        if (json['error']) {
+                            $('#multisafepay-form').prepend('<div class="alert alert-danger alert-dismissible fade show" role="alert"><i class="fas fa-exclamation-circle"></i>&nbsp;&nbsp;{{ text_error_on_submit }}</div>');
+                            $.each(json['error'], function(index, value) {
+                                if ($('.form-group-' + index).length) {
+                                    $('.form-group-' + index + ' .container .row .col').append('<div class="text-danger">' + value + '</div>');
+                                    $('.form-group-' + index).addClass('has-error');
+                                }
+                            });
+                        }
+                    }
+                });
+            });
+        });
+    //--></script>
+    {% if fields.payment_component_enabled %}
+    <script type="text/javascript"><!--
+        function createMultiSafepayPaymentComponents() {
+            const config = {
+                {% if env is defined %}
+                env: '{{ env }}',
+                {% endif %}
+                apiToken: '{{ apiToken }}',
+                orderData: {{ order_data }}
+            };
+            let multisafepay_payment_component = new MultiSafepayPaymentComponent(config, '{{ gateway }}');
+            $('#multisafepay-form').submit(function(event) {
+                multisafepay_payment_component.onSubmitCheckoutForm(event);
+            });
+        }
+
+        $(document).ready(function() {
+            createMultiSafepayPaymentComponents();
+        });
+    //--></script>
+    {% endif %}
+{% endif %}
+{% if issuers %}
+    <script type="text/javascript"><!--
+        $(document).ready(function() {
+            $('.gateways-with-issuers').select2();
+        });
+        //--></script>
+{% endif %}
