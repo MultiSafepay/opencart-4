@@ -3,9 +3,6 @@
 # Exit if any command fails
 set -eo pipefail
 
-# Exit if any command fails
-set -eo pipefail
-
 RELEASE_VERSION=$1
 FILENAME_PREFIX="multisafepay"
 RELEASE_FOLDER=".dist"

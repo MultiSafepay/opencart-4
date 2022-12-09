@@ -1,12 +1,12 @@
-<p style="text-align:center;">
-  <img src="https://www.multisafepay.com/img/multisafepaylogo.svg" width="400px" alt=""/>
+<p align="center">
+    <img src="https://camo.githubusercontent.com/517483ae0eaba9884f397e9af1c4adc7bbc231575ac66cc54292e00400edcd10/68747470733a2f2f7777772e6d756c7469736166657061792e636f6d2f66696c6561646d696e2f74656d706c6174652f696d672f6d756c7469736166657061792d6c6f676f2d69636f6e2e737667" width="400px" position="center">
 </p>
 
 # MultiSafepay plugin for OpenCart 4.x
 
 Easily integrate MultiSafepay payment solutions into your OpenCart webshop with our free plugin.
 
-[![Latest stable version](https://img.shields.io/github/release/multisafepay/opencart-4.svg)](https://github.com/MultiSafepay/Opencart-4)
+![Release](https://img.shields.io/github/v/release/multisafepay/opencart-4?style=for-the-badge)
 
 ## About MultiSafepay
 
@@ -24,7 +24,7 @@ See MultiSafepay Docs – [OpenCart](https://docs.multisafepay.com/docs/opencart
 
 ## Installation via the OpenCart installer
 
-1. Download the Plugin_OpenCart-4_.x.x.ocmod.zip.
+1. Download the multisafepay.ocmod.zip.
 2. Sign in to your **OpenCart Backend**.
 3. Go to **Extensions** > **Installer**.
 4. Click **Upload**, and then select the downloaded file.
