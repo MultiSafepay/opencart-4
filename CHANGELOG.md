@@ -6,8 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ***
 
-## 1.0.0-RC
-Release date: December, 9th 2022
+## 1.0.0
+Release date: January, 11th 2023
 
 ### Added
 + Payment Methods
