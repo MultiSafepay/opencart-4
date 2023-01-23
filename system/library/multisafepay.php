@@ -392,12 +392,6 @@ class Multisafepay {
         $second_chance = $this->getSecondChanceObject($payment_multisafepay_second_chance);
         $multisafepay_order->addSecondChance($second_chance);
 
-        // Order Request: Google Analytics ID
-        $google_analytics_account_id = $this->getAnalyticsAccountIdObject($this->config->get($this->key_prefix . 'multisafepay_google_analytics_account_id'));
-        if ($google_analytics_account_id) {
-            $multisafepay_order->addGoogleAnalytics($google_analytics_account_id);
-        }
-
         // Order Request: Shopping Cart Items - Products
         if (!$this->config->get($this->key_prefix . 'multisafepay_shopping_cart_disabled')) {
             $shopping_cart = $this->getShoppingCartItems($data['order_id']);
@@ -602,24 +596,6 @@ class Multisafepay {
         $customer_obj->addAddress($customer_address_obj);
 
         return $customer_obj;
-    }
-
-    /**
-     * Returns GoogleAnalytics object to be used in the OrderRequest transaction
-     *
-     * @param string $payment_multisafepay_google_analytics_account_id
-     *
-     * @return bool|GoogleAnalytics object
-     */
-    public function getAnalyticsAccountIdObject(string $payment_multisafepay_google_analytics_account_id): bool|GoogleAnalytics
-    {
-        if (empty($payment_multisafepay_google_analytics_account_id)) {
-            return false;
-        }
-        $google_analytics_account_id_details = new GoogleAnalytics();
-        $google_analytics_account_id_details->addAccountId($payment_multisafepay_google_analytics_account_id);
-
-        return $google_analytics_account_id_details;
     }
 
     /**
