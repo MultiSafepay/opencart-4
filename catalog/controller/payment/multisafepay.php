@@ -658,6 +658,17 @@ class Multisafepay extends Controller {
     }
 
     /**
+     * Handles the confirm order form for Pay After Delivery Installments payment method
+     *
+     * @return string
+     */
+    public function payAfterDeliveryInstallments(): string
+    {
+        $data = $this->paymentMethodBase('BNPL_INSTM');
+        return $this->load->view($this->route, $data);
+    }
+
+    /**
      * Handles the confirm order form for PayPal payment method
      *
      * @return string

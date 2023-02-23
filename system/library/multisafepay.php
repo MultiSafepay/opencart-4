@@ -55,7 +55,7 @@ class Multisafepay {
     public const NON_STANDARD_MODEL_CALL = 'model_extension_multisafepay';
     public const TOTAL_EXTENSION_KEY_PREFIX = 'total_';
 
-    public const CONFIGURABLE_PAYMENT_COMPONENT = array('AMEX', 'CREDITCARD', 'MAESTRO', 'MASTERCARD', 'VISA');
+    public const CONFIGURABLE_PAYMENT_COMPONENT = array('AMEX', 'CREDITCARD', 'MAESTRO', 'MASTERCARD', 'VISA', 'BNPL_INSTM');
     public const CONFIGURABLE_TOKENIZATION = array('AMEX', 'CREDITCARD', 'MAESTRO', 'MASTERCARD', 'VISA');
     public const CONFIGURABLE_RECURRING_PAYMENT_METHODS = array('AMEX', 'MAESTRO', 'MASTERCARD', 'VISA', 'CREDITCARD');
     public const CONFIGURABLE_TYPE_SEARCH = array('AFTERPAY', 'DIRDEB', 'EINVOICE', 'IN3', 'IDEAL', 'MYBANK', 'PAYAFTER', 'SANTANDER');
@@ -2379,6 +2379,14 @@ class Multisafepay {
                 'description' => $this->language->get('text_title_pay_after_delivery'),
                 'type' => 'gateway',
                 'brief_description' => $this->language->get('text_brief_description_payafter')
+            ),
+            array(
+                'id' => 'BNPL_INSTM',
+                'code' => 'bnpl_instm',
+                'route' => 'multisafepay/payAfterDeliveryInstallments',
+                'description' => $this->language->get('text_title_pay_after_delivery_installments'),
+                'type' => 'gateway',
+                'brief_description' => $this->language->get('text_brief_description_payafter_installments')
             ),
             array(
                 'id' => 'PAYPAL',
