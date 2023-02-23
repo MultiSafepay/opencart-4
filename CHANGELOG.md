@@ -6,6 +6,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ***
 
+## 1.1.0
+Release date: Feb, 23rd 2023
+
+### Added
++ DAVAMS-578: Add Pay After Delivery Installments payment method
+
+### Removed
++ DAVAMS-572: Remove Google Analytics tracking ID within the order request
+
+***
+
 ## 1.0.0
 Release date: January, 11th 2023
 
