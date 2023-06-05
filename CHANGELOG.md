@@ -31,7 +31,7 @@ Release date: January, 11th 2023
   - Bank transfer
   - Belfius
   - CBC
-  - Credit Cards
+  - Card payment
   - Dotpay
   - E-Invoicing
   - EPS
