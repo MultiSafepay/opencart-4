@@ -4,8 +4,8 @@ namespace Opencart\Catalog\Controller\Extension\Multisafepay\Payment;
 require_once(DIR_EXTENSION . 'multisafepay/system/library/multisafepay.php');
 require_once(DIR_EXTENSION . 'multisafepay/system/library/multisafepayevents.php');
 
-use Opencart\System\Engine\Controller;
 use MultiSafepay\Api\Transactions\TransactionResponse;
+use Opencart\System\Engine\Controller;
 use Opencart\System\Library\Multisafepayevents;
 
 /**
@@ -65,7 +65,7 @@ class Multisafepay extends Controller {
         if ($data['test_mode']) {
             $data['env'] = 'test';
         }
-
+        
         $order_template = array(
             'currency' => $data['currency'],
             'amount' => $data['amount'],
@@ -82,8 +82,9 @@ class Multisafepay extends Controller {
 
         // Recurring model is just working when payment components and tokenization are enabled at the same time, and for some specific credit cards
         if ($data['fields']['tokenization'] && $this->customer->isLogged() && in_array($data['gateway'], $this->multisafepay->configurable_recurring_payment_methods)) {
-            $order_template['recurring']['model'] = 'cardOnFile';
-            $order_template['customer']['reference'] = $order_info['customer_id'];
+            $recurring['model'] = 'cardOnFile';
+            $recurring['tokens'] = $this->multisafepay->getTokensByGatewayCode($order_info['customer_id'], $data['gateway']);
+            $data['recurring'] = json_encode($recurring);
         }
         $data['order_data'] = json_encode($order_template);
 

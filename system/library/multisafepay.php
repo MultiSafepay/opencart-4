@@ -366,9 +366,20 @@ class Multisafepay {
             $multisafepay_order->addGatewayInfo($gateway_info);
         }
 
+        // Initialize the variable to add the customer reference to the customer object
+        $add_reference = false;
+
         // If order goes through Payment Component
         if (isset($data['payload']) && ((string)$data['payload'] !== '')) {
             $multisafepay_order->addData(array('payment_data' => array('payload' => $data['payload'])));
+            if ($this->config->get($this->key_prefix . 'multisafepay_' . strtolower($data['gateway']) . '_tokenization')) {
+                $multisafepay_order->addRecurringModel('cardOnFile');
+            }
+
+            // Tokenize is true, so customer reference is added to the customer object
+            if (isset($data['tokenize']) && filter_var($data['tokenize'], FILTER_VALIDATE_BOOLEAN)) {
+                $add_reference = true;
+            }
         }
 
         // Order Request: Plugin details
@@ -399,12 +410,12 @@ class Multisafepay {
         }
 
         // Order Request: Customer
-        $customer_payment = $this->getCustomerObject($data['order_id'], 'payment');
+        $customer_payment = $this->getCustomerObject($data['order_id'], $add_reference, 'payment');
         $multisafepay_order->addCustomer($customer_payment);
 
         // Order Request: Customer Delivery. Only if the order requires delivery.
         if ((string)$order_info['shipping_method'] !== '') {
-            $customer_shipping = $this->getCustomerObject($data['order_id'], 'shipping');
+            $customer_shipping = $this->getCustomerObject($data['order_id'], $add_reference, 'shipping');
             $multisafepay_order->addDelivery($customer_shipping);
         }
 
@@ -552,17 +563,42 @@ class Multisafepay {
     }
 
     /**
+     * Return an array of tokens by gateway code
+     *
+     * @param int $customer_reference
+     * @param string $gateway_code
+     *
+     * @return array
+     * @throws ClientExceptionInterface
+     */
+    public function getTokensByGatewayCode(int $customer_reference, string $gateway_code): array
+    {
+        $sdk = $this->getSdkObject((int)$this->config->get('config_store_id'));
+        try {
+            $token_manager = $sdk->getTokenManager();
+            $tokens = $token_manager->getListByGatewayCodeAsArray((string)$customer_reference, $gateway_code, true);
+        } catch (ApiException $apiException) {
+            if ($this->config->get($this->key_prefix . 'multisafepay_debug_mode')) {
+                $this->log->write($apiException->getMessage());
+            }
+            return [];
+        }
+        return $tokens;
+    }
+
+    /**
      * Returns a CustomerDetails object used to build the order request object
      * (in addCustomer and addDelivery methods)
      *
      * @param int $order_id
-     * @param string $type Used to build the object with the order`s shipping or payment information.
+     * @param bool $add_reference
+     * @param string $type Used to build the object with the order's shipping or payment information.
      *
      * @return CustomerDetails object
      */
-    public function getCustomerObject(int $order_id, string $type = 'shipping'): CustomerDetails
+    public function getCustomerObject(int $order_id, bool $add_reference, string $type = 'shipping'): CustomerDetails
     {
-        if (!$this->config->get('config_checkout_address') && $type == 'payment') {
+        if (($type === 'payment') && !$this->config->get('config_checkout_address')) {
             $type = 'shipping';
         }
         $order_info = $this->getOrderInfo($order_id);
@@ -582,6 +618,9 @@ class Multisafepay {
         $customer_obj->addEmailAddressAsString($order_info['email']);
         $customer_obj->addFirstName($order_info[$type . '_firstname'] ?? '');
         $customer_obj->addLastName($order_info[$type . '_lastname'] ?? '');
+        if ($add_reference) {
+            $customer_obj->addReference($order_info['customer_id']);
+        }
 
         $customer_address_parser_obj = new AddressParser();
         $parsed_address = $customer_address_parser_obj->parse($order_info[$type . '_address_1'] ?? '', $order_info[$type . '_address_2'] ?? '');
