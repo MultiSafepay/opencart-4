@@ -6,6 +6,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ***
 
+## 1.2.0
+Release date: September, 26th 2023
+
+### Fixed
++ DAVAMS-665: Refactoring for better error handling
+
+### Changed
++ DAVAMS-642: Improvements over the Payment Component
+
+### Added
++ DAVAMS-663: Add Zinia payment method
+
+***
+
 ## 1.1.1
 Release date: June, 22nd 2023
 
