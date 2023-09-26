@@ -109,6 +109,7 @@ class Multisafepay extends Controller {
         $data['type'] = 'redirect';
         $data['route'] = $this->route;
         $data['test_mode'] = $this->config->get($this->key_prefix . 'multisafepay_environment') ? true : false;
+        $data['unavailable_api'] = empty($this->multisafepay->getApiStatus());
 
         if (in_array($gateway, $this->multisafepay->configurable_type_search)) {
             $data['type'] = $this->config->get($this->key_prefix . 'multisafepay_' . strtolower($gateway) . '_redirect') ? 'redirect' : 'direct';

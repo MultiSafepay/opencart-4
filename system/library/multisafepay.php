@@ -15,7 +15,6 @@ use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfo\Ideal;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfo\Issuer;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfo\Meta;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfo\QrCode;
-use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GoogleAnalytics;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\PaymentOptions;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\PluginDetails;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\SecondChance;
@@ -334,6 +333,22 @@ class Multisafepay {
     }
 
     /**
+     * Checks if MultiSafepay is active through the API
+     */
+    public function getApiStatus(): array
+    {
+        $sdk = $this->getSdkObject((int)$this->config->get('config_store_id'));
+        $gateways = $sdk->getGatewayManager();
+
+        try {
+            return $gateways->getGateways();
+        } catch ( ApiException | ClientExceptionInterface $exception ) {
+            $this->log->write($exception->getMessage());
+            return array();
+        }
+    }
+
+    /**
      * Returns the Order Request Object
      *
      * @param $data
@@ -539,13 +554,14 @@ class Multisafepay {
     public function getIssuersByGatewayCode(string $gateway_code): bool|array
     {
         $sdk = $this->getSdkObject((int)$this->config->get('config_store_id'));
+
         try {
             $issuer_manager = $sdk->getIssuerManager();
             $issuers = $issuer_manager->getIssuersByGatewayCode($gateway_code);
         }
-        catch (InvalidArgumentException $invalidArgumentException) {
+        catch (ApiException | InvalidArgumentException | ClientExceptionInterface $exception) {
             if ($this->config->get($this->key_prefix . 'multisafepay_debug_mode')) {
-                $this->log->write($invalidArgumentException->getMessage());
+                $this->log->write($exception->getMessage());
             }
             return false;
         }
@@ -2700,8 +2716,8 @@ class Multisafepay {
         try {
             $get_token = $api_token_manager->get();
             $token = $get_token->getApiToken();
-        } catch (ClientExceptionInterface $client_exception) {
-            $this->log->write($client_exception->getMessage());
+        } catch (ApiException | ClientExceptionInterface $exception) {
+            $this->log->write($exception->getMessage());
         }
         return $token;
     }
