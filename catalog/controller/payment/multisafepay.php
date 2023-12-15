@@ -65,7 +65,7 @@ class Multisafepay extends Controller {
         if ($data['test_mode']) {
             $data['env'] = 'test';
         }
-        
+
         $order_template = array(
             'currency' => $data['currency'],
             'amount' => $data['amount'],
@@ -706,25 +706,6 @@ class Multisafepay extends Controller {
     public function podium(): string
     {
         $data = $this->paymentMethodBase('PODIUM');
-        return $this->load->view($this->route, $data);
-    }
-
-    /**
-     * Handles the confirm order form for betaalplan payment method
-     *
-     * @return string
-     */
-    public function betaalplan(): string
-    {
-        $data = $this->paymentMethodBase('SANTANDER');
-        if ((string)$data['type'] === 'direct') {
-            $data['gateway_info'] = 'Meta';
-            $data['fields'] = array(
-                'sex' => true,
-                'birthday' => true,
-                'bankaccount' => true
-            );
-        }
         return $this->load->view($this->route, $data);
     }
 

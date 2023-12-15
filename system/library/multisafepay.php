@@ -57,7 +57,7 @@ class Multisafepay {
     public const CONFIGURABLE_PAYMENT_COMPONENT = array('AMEX', 'CREDITCARD', 'MAESTRO', 'MASTERCARD', 'VISA', 'BNPL_INSTM', 'ZINIA');
     public const CONFIGURABLE_TOKENIZATION = array('AMEX', 'CREDITCARD', 'MAESTRO', 'MASTERCARD', 'VISA');
     public const CONFIGURABLE_RECURRING_PAYMENT_METHODS = array('AMEX', 'MAESTRO', 'MASTERCARD', 'VISA', 'CREDITCARD');
-    public const CONFIGURABLE_TYPE_SEARCH = array('AFTERPAY', 'DIRDEB', 'EINVOICE', 'IN3', 'IDEAL', 'MYBANK', 'PAYAFTER', 'SANTANDER');
+    public const CONFIGURABLE_TYPE_SEARCH = array('AFTERPAY', 'DIRDEB', 'EINVOICE', 'IN3', 'IDEAL', 'MYBANK', 'PAYAFTER');
     public const CONFIGURABLE_GATEWAYS_WITH_ISSUERS = array('IDEAL', 'MYBANK');
 
     public const FIXED_TYPE = 'F';
@@ -2467,14 +2467,6 @@ class Multisafepay {
                 'description' => $this->language->get('text_title_paysafecard'),
                 'type' => 'gateway',
                 'brief_description' => $this->language->get('text_brief_description_paysafecard')
-            ),
-            array(
-                'id' => 'SANTANDER',
-                'code' => 'santander',
-                'route' => 'multisafepay/betaalplan',
-                'description' => $this->language->get('text_title_santander_betaalplan'),
-                'type' => 'gateway',
-                'brief_description' => $this->language->get('text_brief_description_santander')
             ),
             array(
                 'id' => 'DIRDEB',
