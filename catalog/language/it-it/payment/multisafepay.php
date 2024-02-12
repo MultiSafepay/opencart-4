@@ -52,6 +52,7 @@ $_['text_title_kbc']                             = 'KBC';
 $_['text_title_klarna']                          = 'Klarna - Compra ora, paga dopo';
 $_['text_title_maestro']                         = 'Maestro';
 $_['text_title_mastercard']                      = 'Mastercard';
+$_['text_title_multibanco']                      = 'Multibanco';
 $_['text_title_mbway']                           = 'MB WAY';
 $_['text_title_mybank']                          = 'MyBank - Bonifico Immediato';
 $_['text_title_parfum_cadeaukaart']              = 'Parfum Cadeaukaart';
