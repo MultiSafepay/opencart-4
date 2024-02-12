@@ -2405,6 +2405,14 @@ class Multisafepay {
                 'brief_description' => $this->language->get('text_brief_description_mastercard')
             ),
             array(
+                'id' => 'MBWAY',
+                'code' => 'mbway',
+                'route' => 'multisafepay/mbway',
+                'description' => $this->language->get('text_title_mbway'),
+                'type' => 'gateway',
+                'brief_description' => $this->language->get('text_brief_description_mbway')
+            ),
+            array(
                 'id' => 'MYBANK',
                 'code' => 'mybank',
                 'route' => 'multisafepay/mybank',
