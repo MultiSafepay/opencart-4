@@ -8,6 +8,10 @@ jobs:
     name: Upload Release Asset OC 4.0 # Name of the job
     runs-on: ubuntu-latest # or windows-latest, macOS-latest
     steps:
+      - name: Install Hub
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y hub
       - name: Setup PHP Action
         uses: shivammathur/setup-php@v2
         with:
