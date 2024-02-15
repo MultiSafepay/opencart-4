@@ -6,6 +6,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ***
 
+## 1.3.0
+Release date: February, 15th 2024
+
+### Added
++ DAVAMS-682: Add support for MB WAY payment method
++ DAVAMS-683: Add support for Multibanco payment method
++ DAVAMS-684: Add support for Template ID in the Payment Component
+
+### Changed
++ DAVAMS-664: Rebrand in3 payment method name and description and remove birthday checkout field
+
+### Removed
++ DAVAMS-711: Remove Santander Betaal per Maand
+
+***
+
 ## 1.2.0
 Release date: September, 26th 2023
 
