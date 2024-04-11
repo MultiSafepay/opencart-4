@@ -484,7 +484,7 @@ class Multisafepay extends Controller {
     }
 
     /**
-     * Handles the confirm order form for in3 payment method
+     * Handles the confirm order form for iDEAL+in3 payment method
      *
      * @return string
      */
