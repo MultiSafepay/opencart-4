@@ -6,6 +6,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ***
 
+## 1.4.0
+Release date: September, 11th 2024
+
+### Added
++ PLGOPS4-68: Add support to OpenCart versions higher than 4.0.1.x
++ DAVAMS-737: Add BNPL_MF
+
+### Changed
++ DAVAMS-744: Rebranding payment method: in3 B2C
+
+### Fixed
++ DAVAMS-754: Fix 'Template ID' within the 'Payment Component'
+
+***
+
 ## 1.3.0
 Release date: February, 15th 2024
 
