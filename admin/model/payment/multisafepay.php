@@ -3,6 +3,7 @@ namespace Opencart\Admin\Model\Extension\Multisafepay\Payment;
 
 require_once(DIR_EXTENSION . 'multisafepay/system/library/multisafepay.php');
 
+use JsonException;
 use Opencart\System\Engine\Model;
 
 class Multisafepay extends Model {
@@ -34,27 +35,40 @@ class Multisafepay extends Model {
      * the latest release tag in GitHub
      *
      * @return bool
+     * @throws JsonException
      */
     public function checkForNewVersions(): bool
     {
         $this->registry->set('multisafepay', new \Opencart\System\Library\Multisafepay($this->registry));
         $current_version = $this->multisafepay->getPluginVersion();
+
+        $url = 'https://api.github.com/repos/multisafepay/opencart-4/releases/latest';
+        $headers = array(
+            'Accept-language: en',
+            'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
+        );
+
         $options = array(
             'http'=> array(
                 'method'=>"GET",
-                'header'=>"Accept-language: en\r\n" .
-                    "Cookie: foo=bar\r\n" .
-                    "User-Agent: PHP\r\n"
+                'header'=> implode("\r\n", $headers) . "\r\n"
             )
         );
         $context = stream_context_create($options);
-        $content = file_get_contents('https://api.github.com/repos/multisafepay/opencart-4/releases/latest', false, $context);
-        if ($content) {
-            $information = json_decode($content, false);
+        // Error control operator @ added to suppress warnings
+        $content = @file_get_contents($url, false, $context);
+        if ($content === false) {
+            // Error attached to the OpenCart system log
+            $error = error_get_last();
+            $log = $this->registry->get('log');
+            $log->write('Error: ' . htmlspecialchars($error['message'] ?? 'Unknown error occurred.', ENT_QUOTES, 'UTF-8'));
+        } else {
+            $information = json_decode($content, false, 512, JSON_THROW_ON_ERROR);
             if (!empty($information->tag_name) && ($information->tag_name > $current_version)) {
                 return true;
             }
         }
+
         return false;
     }
 

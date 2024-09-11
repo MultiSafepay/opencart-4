@@ -3,6 +3,7 @@ namespace Opencart\Catalog\Model\Extension\Multisafepay\Payment;
 
 require_once(DIR_EXTENSION . 'multisafepay/system/library/multisafepay.php');
 
+use JsonException;
 use Opencart\System\Engine\Model;
 
 class Multisafepay extends Model {
@@ -32,7 +33,8 @@ class Multisafepay extends Model {
 
         return array(
             'code' => 'multisafepay',
-            'title' => 'MultiSafepay',
+            'name' => 'MultiSafepay',
+            'option' => array('code' => 'multisafepay.multisafepay', 'name' => 'MultiSafepay'),
             'sort_order' => $this->config->get($this->key_prefix . 'multisafepay_sort_order')
         );
     }
@@ -118,12 +120,18 @@ class Multisafepay extends Model {
                 $title = $gateway['description'];
             }
 
+            $option_data[$gateway['route']] = [
+                'code' => $gateway['route'] . '.' . $gateway['route'],
+                'name' => $title,
+            ];
+
             $methods_data[] = array(
                 'code' => $gateway['route'],
-                'title' => $title,
-                'terms' => '',
+                'name' => $title,
+                'option' => $option_data,
                 'sort_order' => $this->config->get($this->key_prefix . 'multisafepay_' . $gateway['code'] . '_sort_order')
             );
+            unset($option_data);
         }
 
         $sort_order = array();
@@ -160,11 +168,19 @@ class Multisafepay extends Model {
      * @param array $data
      *
      * @return void
+     * @throws JsonException
      */
     public function editOrderPaymentMethod(int $order_id, array $data = array()): void
     {
-        $payment_method_title = trim(strip_tags($data['description']));
-        $this->db->query("UPDATE `" . DB_PREFIX . "order` SET `payment_code` = '" . $this->db->escape($data['route']) . "', `payment_method` = '" . $this->db->escape($payment_method_title) . "' WHERE `order_id` = '" . $order_id . "'");
+        $code = isset($data['route']) ? trim(strip_tags($data['route'] . '.' . $data['route'])) : '';
+        $description = isset($data['description']) ? trim(strip_tags($data['description'])) : '';
+
+        $payment_method_update = json_encode([
+            'code' => $code,
+            'name' => $description,
+        ], JSON_THROW_ON_ERROR);
+
+        $this->db->query("UPDATE `" . DB_PREFIX . "order` SET `payment_method` = '" . $this->db->escape($payment_method_update) . "' WHERE `order_id` = '" . $order_id . "'");
     }
 
     /**

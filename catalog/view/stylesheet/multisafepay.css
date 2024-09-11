@@ -9,8 +9,7 @@ div.required .mandatory-field:before {
 #multisafepay-form label {
     display: inline !important;
 }
-#multisafepay-form input[type=checkbox] {
+#multisafepay-form input[type=checkbox]:not(.msp-ui-checkbox) {
     vertical-align: text-top;
     margin-right: 4px;
 }
-

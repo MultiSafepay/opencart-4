@@ -28,7 +28,7 @@
         e.preventDefault();
         if (confirm('{{ text_refund_confirm }}')) {
             $.ajax({
-                url: 'index.php?route=extension/multisafepay/payment/multisafepay|refundOrder&user_token={{ user_token }}&order_id={{ order_id }}',
+                url: 'index.php?route=extension/multisafepay/payment/multisafepay.refundOrder&user_token={{ user_token }}&order_id={{ order_id }}',
                 dataType: 'json',
                 async: false,
                 beforeSend: function() {
@@ -42,8 +42,8 @@
                         $('#tab-multisafepay-order').prepend('<div class="alert alert-danger alert-dismissible fade show" role="alert">' + json['error'] + ' <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>');
                     }
                     if (json['success']) {
-                        $('#history').load('index.php?route=sale/order|history&user_token={{ user_token }}&order_id={{ order_id }}');
-                        $('#tab-multisafepay-order').load('index.php?route=extension/multisafepay/payment/multisafepay|refreshOrderTab&user_token={{ user_token }}&order_id={{ order_id }}', function() {
+                        $('#history').load('index.php?route=sale/order.history&user_token={{ user_token }}&order_id={{ order_id }}');
+                        $('#tab-multisafepay-order').load('index.php?route=extension/multisafepay/payment/multisafepay.refreshOrderTab&user_token={{ user_token }}&order_id={{ order_id }}', function() {
                             $('#tab-multisafepay-order').prepend('<div class="alert alert-success alert-dismissible fade show" role="alert">' + json['success'] + ' <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>');
                         });
                     }
@@ -62,7 +62,7 @@
                 e.preventDefault();
                 if (confirm('{{ text_cancelled_confirm }}')) {
                     $.ajax({
-                        url: 'index.php?route=extension/multisafepay/payment/multisafepay|changeMultiSafepayOrderStatusTo&user_token={{ user_token }}&order_id={{ order_id }}&type=cancelled',
+                        url: 'index.php?route=extension/multisafepay/payment/multisafepay.changeMultiSafepayOrderStatusTo&user_token={{ user_token }}&order_id={{ order_id }}&type=cancelled',
                         dataType: 'json',
                         async: false,
                         beforeSend: function() {
@@ -76,8 +76,8 @@
                                 $('#tab-multisafepay-order').append('<div class="alert alert-danger alert-dismissible fade show" role="alert">' + json['error'] + ' <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>');
                             }
                             if (json['success']) {
-                                $('#history').load('index.php?route=sale/order|history&user_token={{ user_token }}&order_id={{ order_id }}');
-                                $('#tab-multisafepay-order').load('index.php?route=extension/multisafepay/payment/multisafepay|refreshOrderTab&user_token={{ user_token }}&order_id={{ order_id }}', function() {
+                                $('#history').load('index.php?route=sale/order.history&user_token={{ user_token }}&order_id={{ order_id }}');
+                                $('#tab-multisafepay-order').load('index.php?route=extension/multisafepay/payment/multisafepay.refreshOrderTab&user_token={{ user_token }}&order_id={{ order_id }}', function() {
                                     $('#tab-multisafepay-order').prepend('<div class="alert alert-success alert-dismissible fade show" role="alert">' + json['success'] + ' <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>');
                                 });
                             }
@@ -96,7 +96,7 @@
                 e.preventDefault();
                 if (confirm('{{ text_shipped_confirm }}')) {
                     $.ajax({
-                        url: 'index.php?route=extension/multisafepay/payment/multisafepay|changeMultiSafepayOrderStatusTo&user_token={{ user_token }}&order_id={{ order_id }}&type=shipped',
+                        url: 'index.php?route=extension/multisafepay/payment/multisafepay.changeMultiSafepayOrderStatusTo&user_token={{ user_token }}&order_id={{ order_id }}&type=shipped',
                         dataType: 'json',
                         async: false,
                         beforeSend: function() {
@@ -110,9 +110,9 @@
                                 $('#tab-multisafepay-order').append('<div class="alert alert-danger alert-dismissible fade show" role="alert">' + json['error'] + ' <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>');
                             }
                             if (json['success']) {
-                                $('#history').load('index.php?route=sale/order|history&user_token={{ user_token }}&order_id={{ order_id }}');
+                                $('#history').load('index.php?route=sale/order.history&user_token={{ user_token }}&order_id={{ order_id }}');
 
-                                $('#tab-multisafepay-order').load('index.php?route=extension/multisafepay/payment/multisafepay|refreshOrderTab&user_token={{ user_token }}&order_id={{ order_id }}', function() {
+                                $('#tab-multisafepay-order').load('index.php?route=extension/multisafepay/payment/multisafepay.refreshOrderTab&user_token={{ user_token }}&order_id={{ order_id }}', function() {
                                     $('#tab-multisafepay-order').prepend('<div class="alert alert-success alert-dismissible fade show" role="alert">' + json['success'] + ' <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>');
                                 });
                             }

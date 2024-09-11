@@ -99,7 +99,7 @@ class Multisafepayevents {
             }
             if (((string)$result['code'] !== 'multisafepay') && $this->config->get($this->key_prefix . $result['code'] . '_status')) {
                 $this->load->model('extension/' . $result['extension'] . '/payment/' . $result['code']);
-                $method = $this->{'model_extension_' . $result['extension'] . '_payment_' . $result['code']}->getMethod($toggle_address);
+                $method = $this->{'model_extension_' . $result['extension'] . '_payment_' . $result['code']}->getMethods($toggle_address);
 
                 if ($method) {
                     $method_data[$result['code']] = $method;
@@ -107,23 +107,7 @@ class Multisafepayevents {
             }
         }
 
-        $method_data = $this->sortMethods($method_data);
-
-        // Stored payment methods
-        $this->load->model('account/payment_method');
-
-        $payment_methods = $this->model_account_payment_method->getPaymentMethods($this->customer->getId());
-
-        foreach ($payment_methods as $payment_method) {
-            if (!empty($result['code'])) {
-                $method_data[$result['code'] . '_' . $result['code']] = [
-                    'name' => $payment_method['name'],
-                    'code' => $payment_method['code']
-                ];
-            }
-        }
-
-        $output = $method_data;
+        $output = $this->sortMethods($method_data);
     }
 
     /**
@@ -193,7 +177,7 @@ class Multisafepayevents {
                 $gateway = 'multisafepay';
                 $gateway_name_array = explode('/', $value);
                 if (!empty($gateway_name_array[1])) {
-                    $gateway .= '|' . strtolower($gateway_name_array[1]);
+                    $gateway .= '.' . strtolower($gateway_name_array[1]);
                 }
 
                 $output = array(
@@ -224,7 +208,10 @@ class Multisafepayevents {
             $order_info = $this->model_sale_order->getOrder($order_id);
             $invoice_id = '';
 
-            if ($order_info && str_contains($order_info['payment_code'], 'multisafepay')) {
+            if ($order_info &&
+                isset($order_info['payment_method']['code']) &&
+                str_contains($order_info['payment_method']['code'], 'multisafepay')
+            ) {
                 $invoice_no = $this->{$this->model_call}->getNextInvoiceId($order_id);
                 $invoice_id = $order_info['invoice_prefix'] . $invoice_no;
 
@@ -237,8 +224,10 @@ class Multisafepayevents {
                 $transaction_manager->update((string)$order_id, $update_order);
             }
 
-            if ($order_info && (str_contains($order_info['payment_code'], 'multisafepay'))
-                && $this->model_setting_setting->getValue(
+            if ($order_info &&
+                isset($order_info['payment_method']['code']) &&
+                str_contains($order_info['payment_method']['code'], 'multisafepay') &&
+                $this->model_setting_setting->getValue(
                     $this->key_prefix . 'multisafepay_debug_mode',
                     (int)$order_info['store_id']
                 )
@@ -270,13 +259,14 @@ class Multisafepayevents {
         $this->registry->set('multisafepay', new Multisafepay($this->registry));
         $multisafepay_order = $this->multisafepay->getAdminOrderObject((int)$args['order_id']);
 
-        if ($multisafepay_order
-            && $multisafepay_order->getTransactionId()
-            && (str_contains($order_info['payment_code'], 'multisafepay'))
-            && $this->user->hasPermission('access', $this->route)
+        if ($multisafepay_order &&
+            isset($order_info['payment_method']['code']) &&
+            str_contains($order_info['payment_method']['code'], 'multisafepay') &&
+            $multisafepay_order->getTransactionId() &&
+            $this->user->hasPermission('access', $this->route)
         ) {
             $this->load->language($this->route);
-            $content = $this->load->controller($this->route . '|order');
+            $content = $this->load->controller($this->route . '.order');
 
             $args['tabs'][] = array(
                 'code' => 'multisafepay-order',
@@ -285,11 +275,11 @@ class Multisafepayevents {
             );
         }
 
-        if (!empty($order_info['payment_code'])) {
-            if (str_contains($order_info['payment_code'], 'multisafepay')) {
-                $order_info['payment_code'] = 'multisafepay';
+        if (!empty($order_info['payment_method']['code'])) {
+            if (str_contains($order_info['payment_method']['code'], 'multisafepay')) {
+                $order_info['payment_method']['code'] = 'multisafepay';
             }
-            $extension_info = $this->model_setting_extension->getExtensionByCode('payment', $order_info['payment_code']);
+            $extension_info = $this->model_setting_extension->getExtensionByCode('payment', $order_info['payment_method']['code']);
 
             if ($extension_info
                 && (!str_contains($extension_info['extension'], 'multisafepay'))
@@ -297,7 +287,7 @@ class Multisafepayevents {
             ) {
                 $content = '';
                 if (is_file(DIR_EXTENSION . $extension_info['extension'] . '/admin/controller/payment/' . $extension_info['code'] . '.php')) {
-                    $content = $this->load->controller('extension/' . $extension_info['extension'] . '/payment/' . $extension_info['code'] . '|order');
+                    $content = $this->load->controller('extension/' . $extension_info['extension'] . '/payment/' . $extension_info['code'] . '.order');
                 }
                 if (!$content instanceof Exception) {
                     $this->load->language('extension/' . $extension_info['extension'] . '/payment/' . $extension_info['code'], 'extension');
@@ -318,7 +308,7 @@ class Multisafepayevents {
 
         foreach ($extensions as $extension) {
             if ($this->config->get('fraud_' . $extension['code'] . '_status')) {
-                $content = $this->load->controller('extension/' . $extension['extension'] . '/fraud/' . $extension['code'] . '|order');
+                $content = $this->load->controller('extension/' . $extension['extension'] . '/fraud/' . $extension['code'] . '.order');
 
                 if (!$content instanceof Exception) {
                     $this->load->language('extension/' . $extension['extension'] . '/fraud/' . $extension['code'], 'extension');

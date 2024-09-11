@@ -11,7 +11,6 @@ use MultiSafepay\Api\Transactions\OrderRequest;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\CustomerDetails;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\Description;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfo\Account;
-use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfo\Ideal;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfo\Issuer;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfo\Meta;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfo\QrCode;
@@ -57,8 +56,8 @@ class Multisafepay {
     public const CONFIGURABLE_PAYMENT_COMPONENT = array('AMEX', 'CREDITCARD', 'MAESTRO', 'MASTERCARD', 'VISA', 'BNPL_INSTM', 'BNPL_MF', 'ZINIA');
     public const CONFIGURABLE_TOKENIZATION = array('AMEX', 'CREDITCARD', 'MAESTRO', 'MASTERCARD', 'VISA');
     public const CONFIGURABLE_RECURRING_PAYMENT_METHODS = array('AMEX', 'MAESTRO', 'MASTERCARD', 'VISA', 'CREDITCARD');
-    public const CONFIGURABLE_TYPE_SEARCH = array('AFTERPAY', 'DIRDEB', 'EINVOICE', 'IN3', 'IDEAL', 'MYBANK', 'PAYAFTER');
-    public const CONFIGURABLE_GATEWAYS_WITH_ISSUERS = array('IDEAL', 'MYBANK');
+    public const CONFIGURABLE_TYPE_SEARCH = array('AFTERPAY', 'DIRDEB', 'EINVOICE', 'IN3', 'MYBANK', 'PAYAFTER');
+    public const CONFIGURABLE_GATEWAYS_WITH_ISSUERS = array('MYBANK');
 
     public const FIXED_TYPE = 'F';
     public const PERCENTAGE_TYPE = 'P';
@@ -429,7 +428,7 @@ class Multisafepay {
         $multisafepay_order->addCustomer($customer_payment);
 
         // Order Request: Customer Delivery. Only if the order requires delivery.
-        if ((string)$order_info['shipping_method'] !== '') {
+        if (!empty($order_info['shipping_method'])) {
             $customer_shipping = $this->getCustomerObject($data['order_id'], $add_reference, 'shipping');
             $multisafepay_order->addDelivery($customer_shipping);
         }
@@ -692,7 +691,7 @@ class Multisafepay {
     public function getPaymentOptionsObject(): PaymentOptions
     {
         $payment_options_details = new PaymentOptions();
-        $payment_options_details->addNotificationUrl($this->url->link($this->route . '|postCallback'));
+        $payment_options_details->addNotificationUrl($this->url->link($this->route . '.postCallback'));
         $payment_options_details->addRedirectUrl($this->url->link('checkout/success', 'language=' . $this->config->get('config_language'), true));
         $payment_options_details->addCancelUrl($this->url->link('checkout/failure', 'language=' . $this->config->get('config_language'), true));
 
@@ -726,22 +725,15 @@ class Multisafepay {
      * Returns GatewayInfoInterface object to be used in OrderRequest transaction
      *
      * @param array $data
-     * @return bool|array|Ideal|Issuer|QrCode|Account|Meta objects
+     * @return bool|array|Issuer|QrCode|Account|Meta objects
      */
-    public function getGatewayInfoInterfaceObject(array $data): bool|array|Ideal|Issuer|QrCode|Account|Meta
+    public function getGatewayInfoInterfaceObject(array $data): bool|array|Issuer|QrCode|Account|Meta
     {
         if (!isset($data['gateway_info'])) {
             return false;
         }
 
         switch ($data['gateway_info']) {
-            case 'Ideal':
-                if (empty($data['issuer_id'])) {
-                    return false;
-                }
-                $gateway_info = new Ideal();
-                $gateway_info->addIssuerId((string)$data['issuer_id']);
-                break;
             case 'MyBank':
                 if (empty($data['issuer_id'])) {
                     return false;
@@ -1252,8 +1244,10 @@ class Multisafepay {
             }
         }
 
-        if ($has_shipping !== false) {
-            $shipping_tax_class_id = $this->getShippingTaxClassId($order_info['shipping_code']);
+        if (($has_shipping !== false) &&
+            isset($order_info['shipping_method']['code'])
+        ) {
+            $shipping_tax_class_id = $this->getShippingTaxClassId($order_info['shipping_method']['code']);
             if ($shipping_tax_class_id) {
                 $fixed_taxes_items = $this->addToArrayOfFixedTaxes((float)$order_totals[$has_shipping]['value'], $shipping_tax_class_id, $fixed_taxes_items);
             }
@@ -1478,9 +1472,11 @@ class Multisafepay {
         }
 
         $order_info = $this->getOrderInfo($order_id);
-        $shipping_tax_class_id = $this->getShippingTaxClassId($order_info['shipping_code']);
-        if ($shipping_tax_class_id) {
-            $tax_rate = $this->getItemTaxRate((float)$order_totals[$has_shipping]['value'], $shipping_tax_class_id);
+        if (isset($order_info['shipping_method']['code'])) {
+            $shipping_tax_class_id = $this->getShippingTaxClassId($order_info['shipping_method']['code']);
+            if ($shipping_tax_class_id) {
+                $tax_rate = $this->getItemTaxRate((float)$order_totals[$has_shipping]['value'], $shipping_tax_class_id);
+            }
         }
 
         return array(

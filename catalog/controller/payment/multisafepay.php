@@ -113,7 +113,7 @@ class Multisafepay extends Controller {
         $data['issuers'] = $data['fields'] = $data['gateway_info'] = array();
         $data['gateway'] = $gateway;
         $data['order_id'] = (int)$this->session->data['order_id'];
-        $data['action'] = $this->url->link($this->route . '|confirm', '', true);
+        $data['action'] = $this->url->link($this->route . '.confirm', '', true);
         $data['back'] = $this->url->link('checkout/checkout', '', true);
         $data['type'] = 'redirect';
         $data['route'] = $this->route;
@@ -541,14 +541,7 @@ class Multisafepay extends Controller {
     public function ideal(): string
     {
         $data = $this->paymentMethodBase('IDEAL');
-        if ((string)$data['type'] === 'direct') {
-            $issuers = $this->multisafepay->getIssuersByGatewayCode($data['gateway']);
-            if ($issuers) {
-                $data['issuers'] = $issuers;
-                $data['type'] = 'direct';
-                $data['gateway_info'] = 'Ideal';
-            }
-        }
+        $data['type'] = 'direct';
         return $this->load->view($this->route, $data);
     }
 
@@ -619,7 +612,7 @@ class Multisafepay extends Controller {
         $data = $this->paymentMethodBase('MULTIBANCO');
         return $this->load->view($this->route, $data);
     }
-    
+
     /**
      * Handles the confirmation order form for MB WAY payment method
      *
@@ -1032,8 +1025,24 @@ class Multisafepay extends Controller {
                 break;
         }
 
-        if ($gateway_details && ((string)$gateway_details['route'] !== (string)$order_info['payment_code'])) {
-            $this->log->write('Callback received with a different payment method for Order ID ' . $order_id . ' on ' . $timestamp . ' with Status: ' . $status . ', and PSP ID: ' . $psp_id . '. and payment method pass from ' . $order_info['payment_method'] . ' to ' . $gateway_details['description'] . '.');
+        if ($gateway_details &&
+            isset($gateway_details['route'], $order_info['payment_method']['code']) &&
+            !str_contains((string)$order_info['payment_method']['code'], (string)$gateway_details['route'])
+        ) {
+            // In the hypothetical case that the payment method name is empty,
+            // we will try to get the payment method name from the payment method code,
+            // and if it is not possible, we will set it as 'Unknown'.
+            $order_payment_name = $order_info['payment_method']['name'];
+            if (empty($order_payment_name)) {
+                $code_parts = explode('.', $order_info['payment_method']['code']);
+                $sub_parts = explode('/', $code_parts[0]);
+                if (!empty($sub_parts[1])) {
+                    $order_payment_name = ucfirst($sub_parts[1]);
+                } else {
+                    $order_payment_name = 'Unknown';
+                }
+            }
+            $this->log->write('Callback received with a different payment method for Order ID ' . $order_id . ' on ' . $timestamp . ' with Status: ' . $status . ', and PSP ID: ' . $psp_id . '. and payment method pass from ' . $order_payment_name . ' to ' . $gateway_details['description'] . '.');
             $this->{$this->model_call}->editOrderPaymentMethod($order_id, $gateway_details);
         }
 
@@ -1124,7 +1133,9 @@ class Multisafepay extends Controller {
     {
         $this->load->model('checkout/order');
         $order_info = $this->model_checkout_order->getOrder((int)$this->request->get['transactionid']);
-        if (isset($order_info['payment_code']) && !str_contains($order_info['payment_code'], 'multisafepay')) {
+        if (isset($order_info['payment_method']['code']) &&
+            !str_contains($order_info['payment_method']['code'], 'multisafepay')
+        ) {
             $this->log->write('Callback received for an order which currently does not have a MultiSafepay payment method assigned.');
             $this->response->addHeader('Content-type: text/plain');
             $this->response->setOutput('OK');

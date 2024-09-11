@@ -96,10 +96,10 @@ class Multisafepay extends Controller {
         $data['breadcrumbs'] = $breadcrumbs_array;
 
         if (isset($this->request->get['store_id'])) {
-            $data['save'] = $this->url->link($this->route . '|save', $this->token_name . '=' . $this->session->data[$this->token_name] . '&store_id=' . $data['store_id'], true);
+            $data['save'] = $this->url->link($this->route . '.save', $this->token_name . '=' . $this->session->data[$this->token_name] . '&store_id=' . $data['store_id'], true);
         }
         if (!isset($this->request->get['store_id'])) {
-            $data['save'] = $this->url->link($this->route . '|save', $this->token_name . '=' . $this->session->data[$this->token_name], true);
+            $data['save'] = $this->url->link($this->route . '.save', $this->token_name . '=' . $this->session->data[$this->token_name], true);
         }
 
         $data['back'] = $this->url->link($this->extension_list_route, $this->token_name . '=' . $this->session->data[$this->token_name] . '&type=payment', true);
@@ -240,7 +240,7 @@ class Multisafepay extends Controller {
                     'code' => 'multisafepay_all_methods_at_model',
                     'description' => 'All payment methods in model checkout deployed after',
                     'trigger' => 'catalog/model/checkout/payment_method/getMethods/after',
-                    'action' => $this->extension_directory_route . 'payment/multisafepay|catalogModelCheckoutPaymentMethodAfter',
+                    'action' => $this->extension_directory_route . 'payment/multisafepay.catalogModelCheckoutPaymentMethodAfter',
                     'status' => 1,
                     'sort_order' => 0
                 )
@@ -255,7 +255,7 @@ class Multisafepay extends Controller {
                     'code' => 'multisafepay_simplify_methods',
                     'description' => 'Simplify payment method name so can be found on database for extensions after',
                     'trigger' => 'catalog/model/setting/extension/getExtensionByCode/after',
-                    'action' => $this->extension_directory_route . 'payment/multisafepay|catalogModelSettingExtensionAfter',
+                    'action' => $this->extension_directory_route . 'payment/multisafepay.catalogModelSettingExtensionAfter',
                     'status' => 1,
                     'sort_order' => 0
                 )
@@ -270,7 +270,7 @@ class Multisafepay extends Controller {
                     'code' => 'multisafepay_set_invoiced_to_msp',
                     'description' => 'Set as invoiced the order in MSP',
                     'trigger' => 'admin/model/sale/order/createInvoiceNo/before',
-                    'action' => $this->extension_directory_route . 'payment/multisafepay|adminModelSaleOrderCreateInvoiceNoBefore',
+                    'action' => $this->extension_directory_route . 'payment/multisafepay.adminModelSaleOrderCreateInvoiceNoBefore',
                     'status' => 1,
                     'sort_order' => 0
                 )
@@ -285,7 +285,7 @@ class Multisafepay extends Controller {
                     'code' => 'multisafepay_set_order_tab',
                     'description' => 'Set MultiSafepay tab in admin order view page',
                     'trigger' => 'admin/view/sale/order_info/before',
-                    'action' => $this->extension_directory_route . 'payment/multisafepay|adminViewSaleOrderInfoBefore',
+                    'action' => $this->extension_directory_route . 'payment/multisafepay.adminViewSaleOrderInfoBefore',
                     'status' => 1,
                     'sort_order' => 0
                 )
@@ -300,7 +300,7 @@ class Multisafepay extends Controller {
                     'code' => 'multisafepay_assets_header',
                     'description' => 'Add CSS on Header to the checkout page',
                     'trigger' => 'catalog/view/common/header/before',
-                    'action' => $this->extension_directory_route . 'payment/multisafepay|catalogViewCommonHeaderBefore',
+                    'action' => $this->extension_directory_route . 'payment/multisafepay.catalogViewCommonHeaderBefore',
                     'status' => 1,
                     'sort_order' => 0
                 )
@@ -315,7 +315,7 @@ class Multisafepay extends Controller {
                     'code' => 'multisafepay_assets_footer',
                     'description' => 'Add JS on Footer to the checkout page',
                     'trigger' => 'catalog/view/common/footer/before',
-                    'action' => $this->extension_directory_route . 'payment/multisafepay|catalogViewCommonFooterBefore',
+                    'action' => $this->extension_directory_route . 'payment/multisafepay.catalogViewCommonFooterBefore',
                     'status' => 1,
                     'sort_order' => 0
                 )
@@ -737,7 +737,10 @@ class Multisafepay extends Controller {
      */
     private function refundWithShoppingCart(array $order_info, TransactionResponse $multisafepay_order): bool
     {
-        if (((string)$order_info['payment_code'] === 'multisafepay/generic') && $this->{$this->model_call}->getSettingValue($this->key_prefix . 'multisafepay_generic_require_shopping_cart', (int)$order_info['store_id'])) {
+        if (isset($order_info['payment_method']['code']) &&
+            str_contains((string)$order_info['payment_method']['code'], 'multisafepay/generic') &&
+            $this->{$this->model_call}->getSettingValue($this->key_prefix . 'multisafepay_generic_require_shopping_cart', (int)$order_info['store_id'])
+        ) {
             return true;
         }
 

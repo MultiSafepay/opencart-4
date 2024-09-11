@@ -299,7 +299,7 @@
                 e.preventDefault();
                 e.stopPropagation();
                 $.ajax({
-                    'url': 'index.php?route=extension/multisafepay/payment/multisafepay|validateForm',
+                    'url': 'index.php?route=extension/multisafepay/payment/multisafepay.validateForm',
                     type: 'post',
                     data: $('#multisafepay-form :input, #multisafepay-form select'),
                     dataType: 'json',
