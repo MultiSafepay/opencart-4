@@ -40,7 +40,7 @@ use Psr\Http\Client\ClientExceptionInterface;
  */
 class Multisafepay {
 
-    public const MULTISAFEPAY_PLUGIN_VERSION = '1.4.0';
+    public const MULTISAFEPAY_PLUGIN_VERSION = '1.4.1';
 
     public const ROUTE = 'extension/multisafepay/payment/multisafepay';
     public const KEY_PREFIX = 'payment_';
