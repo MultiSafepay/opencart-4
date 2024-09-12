@@ -545,7 +545,7 @@ class Multisafepay extends Controller {
 
         $support_variables = array(
             'support_row_value_multisafepay_version' => $plugin_version,
-            'support_row_value_multisafepay_version_oc_supported' => '4.0.0.0, 4.0.1.0, 4.0.1.1',
+            'support_row_value_multisafepay_version_oc_supported' => '4.0.2.0, 4.0.2.1, 4.0.2.2, 4.0.2.3',
             'support_manual_link' => 'https://docs.multisafepay.com/docs/opencart#user-guide',
             'support_changelog_link' => 'https://github.com/MultiSafepay/OpenCart/blob/master/CHANGELOG.md',
             'support_faq_link' => 'https://docs.multisafepay.com/docs/opencart',
