@@ -22,7 +22,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2 # Checkout the code
       - name: Build project
-        run: ./bin/release.sh ${{ steps.get_version.outputs.VERSION }} # Build the project
+        run: ./bin/release.sh ${{ env.VERSION }} # Build the project
       - name: Upload Release Asset
         run: |
           set -x
