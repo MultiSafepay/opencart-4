@@ -2217,6 +2217,14 @@ class Multisafepay {
                 'brief_description' => $this->language->get('text_brief_description_boekenbon')
             ),
             array(
+                'id' => 'BIZUM',
+                'code' => 'Bizum',
+                'route' => 'multisafepay/bizum',
+                'description' => $this->language->get('text_title_bizum'),
+                'type' => 'gateway',
+                'brief_description' => $this->language->get('text_brief_description_bizum')
+            ),
+            array(
                 'id' => 'CBC',
                 'code' => 'cbc',
                 'route' => 'multisafepay/cbc',

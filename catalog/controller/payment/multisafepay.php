@@ -330,6 +330,18 @@ class Multisafepay extends Controller {
     }
 
     /**
+     * Handles the confirm order form for Bizum payment method
+     *
+     * @return string
+     */
+    public function bizum(): string
+    {
+        $data = $this->paymentMethodBase('BIZUM');
+        $data['type'] = 'direct';
+        return $this->load->view($this->route, $data);
+    }
+
+    /**
      * Handles the confirm order form for CBC payment method
      *
      * @return string
