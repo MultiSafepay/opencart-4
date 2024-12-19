@@ -505,9 +505,6 @@ class Multisafepay extends Controller {
         $data = $this->paymentMethodBase('IN3');
         if ((string)$data['type'] === 'direct') {
             $data['gateway_info'] = 'Meta';
-            $data['fields'] = array(
-                'gender' => true
-            );
         }
         return $this->load->view($this->route, $data);
     }
