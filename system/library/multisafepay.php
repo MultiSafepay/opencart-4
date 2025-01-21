@@ -53,7 +53,7 @@ class Multisafepay {
     public const NON_STANDARD_MODEL_CALL = 'model_extension_multisafepay';
     public const TOTAL_EXTENSION_KEY_PREFIX = 'total_';
 
-    public const CONFIGURABLE_PAYMENT_COMPONENT = array('AMEX', 'CREDITCARD', 'MAESTRO', 'MASTERCARD', 'VISA', 'BNPL_INSTM', 'BNPL_MF', 'ZINIA');
+    public const CONFIGURABLE_PAYMENT_COMPONENT = array('AMEX', 'BILLINK', 'CREDITCARD', 'MAESTRO', 'MASTERCARD', 'VISA', 'BNPL_INSTM', 'BNPL_MF', 'ZINIA');
     public const CONFIGURABLE_TOKENIZATION = array('AMEX', 'CREDITCARD', 'MAESTRO', 'MASTERCARD', 'VISA');
     public const CONFIGURABLE_RECURRING_PAYMENT_METHODS = array('AMEX', 'MAESTRO', 'MASTERCARD', 'VISA', 'CREDITCARD');
     public const CONFIGURABLE_TYPE_SEARCH = array('AFTERPAY', 'DIRDEB', 'EINVOICE', 'IN3', 'MYBANK', 'PAYAFTER');
@@ -2215,6 +2215,14 @@ class Multisafepay {
                 'description' => $this->language->get('text_title_boekenbon'),
                 'type' => 'giftcard',
                 'brief_description' => $this->language->get('text_brief_description_boekenbon')
+            ),
+            array(
+                'id' => 'BILLINK',
+                'code' => 'billink',
+                'route' => 'multisafepay/billink',
+                'description' => $this->language->get('text_title_billink'),
+                'type' => 'gateway',
+                'brief_description' => $this->language->get('text_brief_description_billink')
             ),
             array(
                 'id' => 'BIZUM',

@@ -330,6 +330,17 @@ class Multisafepay extends Controller {
     }
 
     /**
+     * Handles the confirm order form for Billink payment method
+     *
+     * @return string
+     */
+    public function billink(): string
+    {
+        $data = $this->paymentMethodBase('BILLINK');
+        return $this->load->view($this->route, $data);
+    }
+
+    /**
      * Handles the confirm order form for Bizum payment method
      *
      * @return string
