@@ -229,18 +229,6 @@ class Multisafepay extends Controller {
     }
 
     /**
-     * Handles the confirm order form for Alipay payment method
-     *
-     * @return string
-     */
-    public function aliPay(): string
-    {
-        $data = $this->paymentMethodBase('ALIPAY');
-        $data['type'] = 'direct';
-        return $this->load->view($this->route, $data);
-    }
-
-    /**
      * Handles the confirm order form for Alipay+ payment method
      *
      * @return string
