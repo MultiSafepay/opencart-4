@@ -2249,14 +2249,6 @@ class Multisafepay {
                 'brief_description' => $this->language->get('text_brief_description_dbrtp')
             ),
             array(
-                'id' => 'DIRECTBANK',
-                'code' => 'directbank',
-                'route' => 'multisafepay/directBank',
-                'description' => $this->language->get('text_title_direct_bank'),
-                'type' => 'gateway',
-                'brief_description' => $this->language->get('text_brief_description_directbank')
-            ),
-            array(
                 'id' => 'DOTPAY',
                 'code' => 'dotpay',
                 'route' => 'multisafepay/dotpay',
