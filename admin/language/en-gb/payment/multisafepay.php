@@ -164,7 +164,7 @@ $_['text_title_e_invoicing']                            = 'E-Invoicing';
 $_['text_title_gezondheidsbon']                         = 'Gezondheidsbon';
 $_['text_title_giropay']                                = 'Giropay';
 $_['text_title_good4fun']                               = 'Good4fun Giftcard';
-$_['text_title_ideal']                                  = 'iDEAL';
+$_['text_title_ideal']                                  = 'iDEAL | Wero';
 $_['text_title_ideal_qr']                               = 'iDEAL QR';
 $_['text_title_kbc']                                    = 'KBC';
 $_['text_title_klarna']                                 = 'Klarna - Pay in 30 days';
@@ -192,7 +192,7 @@ $_['text_title_fietsenbon']                             = 'Fietsenbon';
 $_['text_title_giva_card']                              = 'GivaCard';
 $_['text_title_good_card']                              = 'Good Card';
 $_['text_title_google_pay']                             = 'Google Pay';
-$_['text_title_in3']                                    = 'iDEAL+in3: Betaal in 3 delen (0% rente)';
+$_['text_title_in3']                                    = 'in3: Betaal in 3 delen (0% rente)';
 $_['text_title_nationale_tuinbon']                      = 'Nationale Tuinbon';
 $_['text_title_podium']                                 = 'Podium';
 $_['text_title_sport_fit']                              = 'Sport & Fit';
@@ -230,7 +230,7 @@ $_['text_help_test']                                    = 'Do you want to use th
 $_['text_help_debug']                                   = 'Logs additional information to the system log.';
 $_['text_help_total']                                   = 'The order needs to reach a certain amount before this extension and payment methods is shown in the checkout.';
 $_['text_help_min_amount']                              = 'This payment method is shown in the checkout once the order total reaches a certain amount. Leave blank for no restrictions';
-$_['text_help_max_amount']                              = 'This payment method is not shown in the checkout if the order total exceeds a certain amount. Leave black for now restrictions.';
+$_['text_help_max_amount']                              = 'This payment method is not shown in the checkout if the order total exceeds a certain amount. Leave blank for now restrictions.';
 $_['text_help_order_description']                       = 'A text which will be shown with the order in MultiSafepay Control. If the customer’s bank supports it this description will also be shown on the customer’s bank statement. You can include the order number using {order_id}';
 $_['text_help_second_chance']                           = 'When a customer initiates but does not complete a payment, whatever the reason may be, '
                                                         . 'MultiSafepay will send two Second Chance reminder emails. In the emails, '
@@ -238,12 +238,12 @@ $_['text_help_second_chance']                           = 'When a customer initi
                                                         . 'The first Second Chance email is sent 1 hour after the transaction was initiated and the second after 24 hours. '
                                                         . 'To receive second chance emails, this option must also be activated within your MultiSafepay account, otherwise it will not work.';
 $_['text_help_more_info_second_chance']                 = 'More information about Second Chance in our <a href="https://docs.multisafepay.com/docs/second-chance" target="_blank">documentation</a>';
-$_['text_help_currency']                                = 'You can select the currencies for which you want to show this payment method. Leave black for no restriction.';
+$_['text_help_currency']                                = 'You can select the currencies for which you want to show this payment method. Leave blank for no restriction.';
 $_['text_help_order_status_id_initialized']             = 'Default initialized order status for all payment methods. Later in each payment method settings is possible to customize any other for each one.';
-$_['text_help_customer_group']                          = 'You can select the consumer group to which you want to show this payment method. Leave black for no restriction.';
+$_['text_help_customer_group']                          = 'You can select the consumer group to which you want to show this payment method. Leave blank for no restriction.';
 $_['text_help_drag_and_drop']                           = 'Drag and drop this element to set the order in which this payment method will be shown in the store';
 $_['text_help_lifetime_payment_link']                   = 'This indicates the lifetime of a payment link. By default is 30 days. This means that the customer has 30 days to complete the transaction using the payment link';
-$_['text_help_shopping_cart_disabled']                  = 'Select "Yes" to hide the cart items on the MultiSafepay payment page, leaving only the total order amount. <br /> Note: If select "Yes" the payment methods which require shopping cart won\'t work: Afterpay, E-Invoicing, iDEAL+in3, Klarna and Pay After Delivery.';
+$_['text_help_shopping_cart_disabled']                  = 'Select "Yes" to hide the cart items on the MultiSafepay payment page, leaving only the total order amount. <br /> Note: If select "Yes" the payment methods which require shopping cart won\'t work: Afterpay, E-Invoicing, in3, Klarna and Pay After Delivery.';
 $_['text_help_custom_order_total_keys']                 = 'Fill in with the custom total order code(s) that should not be visible on the MultiSafepay payment page. Use a semicolon(;) to separate values';
 $_['text_help_payment_component_template_id']           = 'If empty, the default one will be used.';
 $_['error_permission']                                  = 'Warning: You do not have permission to modify payment MultiSafepay';
