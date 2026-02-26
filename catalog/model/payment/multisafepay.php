@@ -5,15 +5,14 @@ require_once(DIR_EXTENSION . 'multisafepay/system/library/multisafepay.php');
 
 use JsonException;
 use Opencart\System\Engine\Model;
+use Opencart\System\Engine\Registry;
 
 class Multisafepay extends Model {
-
-    protected $registry;
 
     private string $route;
     private string $key_prefix;
 
-    public function __construct($registry) {
+    public function __construct(Registry $registry) {
         parent::__construct($registry);
         $this->registry->set('multisafepay', new \Opencart\System\Library\Multisafepay($registry));
         $this->route = $this->multisafepay->route;
@@ -31,36 +30,76 @@ class Multisafepay extends Model {
             return false;
         }
 
-        return array(
+        return [
             'code' => 'multisafepay',
             'name' => 'MultiSafepay',
-            'option' => array('code' => 'multisafepay.multisafepay', 'name' => 'MultiSafepay'),
+            'option' => [
+                'multisafepay' => [
+                    'code' => 'multisafepay.multisafepay',
+                    'name' => 'MultiSafepay'
+                ]
+            ],
             'sort_order' => $this->config->get($this->key_prefix . 'multisafepay_sort_order')
-        );
+        ];
+    }
+
+    /**
+     * Calculate the current cart total using enabled total extensions.
+     *
+     * @return float
+     */
+    private function calculateCartTotal(): float {
+        // Match OpenCart core checkout total calculation exactly.
+        $totals = [];
+        $taxes = $this->cart->getTaxes();
+        $total = 0.0;
+
+        $this->load->model('checkout/cart');
+        ($this->model_checkout_cart->getTotals)($totals, $taxes, $total);
+
+        $base_currency = (string)$this->config->get('config_currency');
+        $session_currency = isset($this->session->data['currency']) ? (string)$this->session->data['currency'] : $base_currency;
+
+        $amount = (float)$total;
+
+        if ($session_currency !== $base_currency) {
+            $amount = $this->currency->convert($amount, $base_currency, $session_currency);
+        }
+
+        $decimal_places = $this->currency->getDecimalPlace($session_currency);
+
+        return round($amount, $decimal_places);
     }
 
     /**
      * Retrieves allowed MultiSafepay payment methods
      *
      * @param array $address
-     * @param float $total
+     * @param float|null $total
      *
-     * @return bool|array $method_data
+     * @return array $method_data
      *
      * phpcs:disabled ObjectCalisthenics.Metrics.MaxNestingLevel
      */
-    public function getMethods(array $address = array(), float $total = 0.0): bool|array
+    public function getMethods(array $address = array(), ?float $total = null): array
     {
-        if (($total <= 0.0) || !$this->config->get($this->key_prefix . 'multisafepay_status')) {
-            return false;
+        if (!$this->config->get($this->key_prefix . 'multisafepay_status')) {
+            return [];
+        }
+
+        $computed_total = $total ?? $this->calculateCartTotal();
+
+        if ($computed_total <= 0.0) {
+            return [];
         }
 
         $this->load->language($this->route);
         $this->load->model('localisation/currency');
+        $this->load->model('localisation/geo_zone');
         $this->registry->set('multisafepay', new \Opencart\System\Library\Multisafepay($this->registry));
         $gateways = $this->multisafepay->getOrderedGateways((int)$this->config->get('config_store_id'));
 
-        $methods_data = array();
+        $option_data = [];
 
         foreach ($gateways as $gateway) {
             // if enable
@@ -69,19 +108,19 @@ class Multisafepay extends Model {
             }
 
             // if order amount is higher than minimum amount
-            if ($this->config->get($this->key_prefix . 'multisafepay_' . $gateway['code'] . '_min_amount') > 0 && $this->config->get($this->key_prefix . 'multisafepay_' . $gateway['code'] . '_min_amount') > $total) {
+            if ($this->config->get($this->key_prefix . 'multisafepay_' . $gateway['code'] . '_min_amount') > 0 && $this->config->get($this->key_prefix . 'multisafepay_' . $gateway['code'] . '_min_amount') > $computed_total) {
                 continue;
             }
 
             // if order amount is lower than maximum amount
-            if ($this->config->get($this->key_prefix . 'multisafepay_' . $gateway['code'] . '_max_amount') > 0 && $this->config->get($this->key_prefix . 'multisafepay_' . $gateway['code'] . '_max_amount') < $total) {
+            if ($this->config->get($this->key_prefix . 'multisafepay_' . $gateway['code'] . '_max_amount') > 0 && $this->config->get($this->key_prefix . 'multisafepay_' . $gateway['code'] . '_max_amount') < $computed_total) {
                 continue;
             }
 
             // if order currency
             $currencies = $this->config->get($this->key_prefix . 'multisafepay_' . $gateway['code'] . '_currency');
             $currency_info = $this->model_localisation_currency->getCurrencyByCode($this->session->data['currency']);
-            if ($this->config->get($this->key_prefix . 'multisafepay_' . $gateway['code'] . '_currency') && !in_array($currency_info['currency_id'], $currencies)) {
+            if ($currencies && !in_array($currency_info['currency_id'], $currencies)) {
                 continue;
             }
 
@@ -89,22 +128,16 @@ class Multisafepay extends Model {
             $allowed_customer_groups_id = $this->config->get($this->key_prefix . 'multisafepay_' . $gateway['code'] . '_customer_group_id');
             $customer_group_id = ($this->customer->getGroupId()) ?: (int)$this->config->get('config_customer_group_id');
 
-            if ($this->config->get($this->key_prefix . 'multisafepay_' . $gateway['code'] . '_customer_group_id') && !in_array($customer_group_id, $allowed_customer_groups_id)) {
+            if ($allowed_customer_groups_id && !in_array($customer_group_id, $allowed_customer_groups_id)) {
                 continue;
             }
 
             $country_id = !empty($address['country_id']) ? (int)$address['country_id'] : 0;
             $zone_id = !empty($address['zone_id']) ? (int)$address['zone_id'] : 0;
 
-            $query = $this->db->query(
-                "SELECT * FROM `" . DB_PREFIX . "zone_to_geo_zone`
-                WHERE `geo_zone_id` = '" . (int)$this->config->get($this->key_prefix . 'multisafepay_' . $gateway['code'] . '_geo_zone_id') . "'
-                AND `country_id` = '" . $country_id . "'
-                AND (`zone_id` = '" . $zone_id . "'
-                OR `zone_id` = '0')"
-            );
+            $geo_zone_id = (int)$this->config->get($this->key_prefix . 'multisafepay_' . $gateway['code'] . '_geo_zone_id');
 
-            if (!$query->num_rows && $this->config->get($this->key_prefix . 'multisafepay_' . $gateway['code'] . '_geo_zone_id')) {
+            if ($geo_zone_id && !$this->model_localisation_geo_zone->getGeoZone($geo_zone_id, $country_id, $zone_id)) {
                 continue;
             }
 
@@ -120,27 +153,24 @@ class Multisafepay extends Model {
                 $title = $gateway['description'];
             }
 
-            $option_data[$gateway['route']] = [
-                'code' => $gateway['route'] . '.' . $gateway['route'],
-                'name' => $title,
+            $option_key = (string)$gateway['route'];
+
+            $option_data[$option_key] = [
+                'code' => 'multisafepay.' . $option_key,
+                'name' => $title
             ];
-
-            $methods_data[] = array(
-                'code' => $gateway['route'],
-                'name' => $title,
-                'option' => $option_data,
-                'sort_order' => $this->config->get($this->key_prefix . 'multisafepay_' . $gateway['code'] . '_sort_order')
-            );
-            unset($option_data);
         }
 
-        $sort_order = array();
-        foreach ($methods_data as $key => $value) {
-            $sort_order[$key] = $value['sort_order'];
+        if (!$option_data) {
+            return [];
         }
-        array_multisort($sort_order, SORT_ASC, $methods_data);
 
-        return $methods_data;
+        return [
+            'code' => 'multisafepay',
+            'name' => 'MultiSafepay',
+            'option' => $option_data,
+            'sort_order' => (int)$this->config->get($this->key_prefix . 'multisafepay_sort_order')
+        ];
     }
 
     /**
@@ -220,19 +250,6 @@ class Multisafepay extends Model {
     public function getOrderTotals(int $order_id): array
     {
         $query = $this->db->query("SELECT * FROM `" . DB_PREFIX . "order_total` WHERE `order_id` = '" . $order_id . "' ORDER BY `sort_order`");
-        return $query->rows;
-    }
-
-    /**
-     * Returns all gift vouchers lines for a given order_id
-     *
-     * @param int $order_id
-     *
-     * @return array
-     */
-    public function getOrderVouchers(int $order_id): array
-    {
-        $query = $this->db->query("SELECT * FROM `" . DB_PREFIX . "order_voucher` WHERE `order_id` = '" . $order_id . "'");
         return $query->rows;
     }
 

@@ -6,6 +6,7 @@ require_once(DIR_EXTENSION . 'multisafepay/system/library/multisafepayevents.php
 
 use MultiSafepay\Api\Transactions\TransactionResponse;
 use Opencart\System\Engine\Controller;
+use Opencart\System\Engine\Registry;
 use Opencart\System\Library\Multisafepayevents;
 
 /**
@@ -13,13 +14,11 @@ use Opencart\System\Library\Multisafepayevents;
  */
 class Multisafepay extends Controller {
 
-    protected $registry;
-
     private string $route;
     private string $key_prefix;
     private string $model_call;
 
-    public function __construct($registry) {
+    public function __construct(Registry $registry) {
         parent::__construct($registry);
         $this->registry->set('multisafepay', new \Opencart\System\Library\Multisafepay($registry));
         $this->route = $this->multisafepay->route;
@@ -140,7 +139,30 @@ class Multisafepay extends Controller {
     public function index(): string
     {
         $this->load->language($this->route);
-        $data = $this->paymentMethodBase();
+
+        // OpenCart 4.1 checkout loads only the payment extension controller code (e.g. "multisafepay")
+        // when rendering the confirm block, even when a specific MultiSafepay option (VISA, etc.) was
+        // selected. Infer the selected gateway from session so the template can render the payment
+        // component container and config.
+        $gateway_id = '';
+
+        if (isset($this->session->data['payment_method']['code'])) {
+            $code = (string)$this->session->data['payment_method']['code'];
+            $parts = explode('.', $code, 2);
+
+            if (count($parts) === 2 && (string)$parts[0] === 'multisafepay') {
+                $selected_route = (string)$parts[1];
+
+                foreach ($this->multisafepay->getGateways() as $gateway) {
+                    if (isset($gateway['route'], $gateway['id']) && (string)$gateway['route'] === $selected_route) {
+                        $gateway_id = (string)$gateway['id'];
+                        break;
+                    }
+                }
+            }
+        }
+
+        $data = $this->paymentMethodBase($gateway_id);
         return $this->load->view($this->route, $data);
     }
 
@@ -927,6 +949,25 @@ class Multisafepay extends Controller {
     {
         if (!isset($this->request->post['order_id'], $this->request->post['type'])) {
             return;
+        }
+
+        // OpenCart 4.1 confirm step loads only the payment extension controller (e.g. "multisafepay"),
+        // so the posted form may not include the selected gateway. Always infer it from the checkout
+        // selection stored in session.
+        if (empty($this->request->post['gateway']) && isset($this->session->data['payment_method']['code'])) {
+            $code = (string)$this->session->data['payment_method']['code'];
+            $parts = explode('.', $code, 2);
+
+            if (count($parts) === 2 && (string)$parts[0] === 'multisafepay') {
+                $selected_route = (string)$parts[1];
+
+                foreach ($this->multisafepay->getGateways() as $gateway) {
+                    if (isset($gateway['route'], $gateway['id']) && (string)$gateway['route'] === $selected_route) {
+                        $this->request->post['gateway'] = (string)$gateway['id'];
+                        break;
+                    }
+                }
+            }
         }
 
         $order_id = (int)$this->request->post['order_id'];

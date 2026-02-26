@@ -5,12 +5,11 @@ require_once(DIR_EXTENSION . 'multisafepay/system/library/multisafepay.php');
 
 use JsonException;
 use Opencart\System\Engine\Model;
+use Opencart\System\Engine\Registry;
 
 class Multisafepay extends Model {
 
-    protected $registry;
-
-    public function __construct($registry) {
+    public function __construct(Registry $registry) {
         parent::__construct($registry);
     }
 
@@ -115,16 +114,15 @@ class Multisafepay extends Model {
     }
 
     /**
-     * Remove coupons, vouchers, reward points, and affiliate commissions in transactions fully refunded
+     * Remove coupon and customer balances for fully refunded transactions.
      *
      * @param int $order_id
      *
      * @return void
      */
-    public function removeCouponsVouchersRewardsPointsAffiliateCommission(int $order_id): void
+    public function removeCouponsRewardsPointsAffiliateCommission(int $order_id): void
     {
         $this->db->query("DELETE FROM `" . DB_PREFIX . "coupon_history` WHERE `order_id` = '" . $order_id . "'");
-        $this->db->query("DELETE FROM `" . DB_PREFIX . "voucher_history` WHERE `order_id` = '" . $order_id . "'");
         $this->db->query("DELETE FROM `" . DB_PREFIX . "customer_reward` WHERE `order_id` = '" . $order_id . "'");
         $this->db->query("DELETE FROM `" . DB_PREFIX . "customer_transaction` WHERE `order_id` = '" . $order_id . "'");
     }

@@ -6,11 +6,10 @@ require_once(DIR_EXTENSION . 'multisafepay/system/library/multisafepayevents.php
 
 use Opencart\System\Engine\Controller;
 use MultiSafepay\Api\Transactions\TransactionResponse;
+use Opencart\System\Engine\Registry;
 use Opencart\System\Library\Multisafepayevents;
 
 class Multisafepay extends Controller {
-
-    protected $registry;
 
     private string $oc_version;
     private string $route;
@@ -23,7 +22,7 @@ class Multisafepay extends Controller {
     private string $customer_group_model_call;
     private array $error = array();
 
-    public function __construct($registry) {
+    public function __construct(Registry $registry) {
         parent::__construct($registry);
         $this->registry->set('multisafepay', new \Opencart\System\Library\Multisafepay($registry));
         $this->oc_version = $this->multisafepay->oc_version;
@@ -545,7 +544,7 @@ class Multisafepay extends Controller {
 
         $support_variables = array(
             'support_row_value_multisafepay_version' => $plugin_version,
-            'support_row_value_multisafepay_version_oc_supported' => '4.0.2.0, 4.0.2.1, 4.0.2.2, 4.0.2.3',
+            'support_row_value_multisafepay_version_oc_supported' => '4.1.0.0, 4.1.0.1, 4.1.0.2, 4.1.0.3',
             'support_manual_link' => 'https://docs.multisafepay.com/docs/opencart#user-guide',
             'support_changelog_link' => 'https://github.com/MultiSafepay/OpenCart/blob/master/CHANGELOG.md',
             'support_faq_link' => 'https://docs.multisafepay.com/docs/opencart',
@@ -715,7 +714,7 @@ class Multisafepay extends Controller {
 
         if ($process_refund) {
             $this->load->model($this->route);
-            $this->{$this->model_call}->removeCouponsVouchersRewardsPointsAffiliateCommission((int)$this->request->get['order_id']);
+            $this->{$this->model_call}->removeCouponsRewardsPointsAffiliateCommission((int)$this->request->get['order_id']);
             $order_info = $this->multisafepay->getAdminOrderInfo((int)$this->request->get['order_id']);
             $status_id_refunded = (int)$this->{$this->model_call}->getSettingValue($this->key_prefix . 'multisafepay_order_status_id_refunded', (int)$order_info['store_id']);
             $this->{$this->model_call}->addOrderHistory((int)$this->request->get['order_id'], $status_id_refunded, $description);
