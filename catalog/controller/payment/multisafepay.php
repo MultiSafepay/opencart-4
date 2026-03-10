@@ -984,6 +984,61 @@ class Multisafepay extends Controller {
     }
 
     /**
+     * Resolves callback gateway details, including wallet + instrument display when available.
+     *
+     * @param TransactionResponse $transaction
+     *
+     * @return bool|array
+     */
+    private function getCallbackGatewayDetails(TransactionResponse $transaction): bool|array
+    {
+        $payment_details = $transaction->getPaymentDetails();
+        $gateway_id = $payment_details->getType();
+        $gateway_details = $this->multisafepay->getGatewayById($gateway_id);
+
+        if (!$gateway_details) {
+            return false;
+        }
+
+        $wallet_id = (string)$payment_details->get('wallet');
+
+        if ($wallet_id === '') {
+            return $gateway_details;
+        }
+
+        $wallet_details = $this->multisafepay->getGatewayById($wallet_id);
+        $wallet_name = $wallet_id;
+
+        if (is_array($wallet_details) && isset($wallet_details['description'])) {
+            $wallet_name = (string)$wallet_details['description'];
+        }
+
+        $instrument_name = $gateway_details['description'] ?? $gateway_id;
+
+        if (strcasecmp($wallet_id, $gateway_id) !== 0) {
+            $gateway_details['description'] = $wallet_name . ' (' . $instrument_name . ')';
+        } else {
+            $gateway_details['description'] = $wallet_name;
+        }
+
+        if (is_array($wallet_details)) {
+            if (isset($wallet_details['route'])) {
+                $gateway_details['route'] = $wallet_details['route'];
+            }
+
+            if (isset($wallet_details['code'])) {
+                $gateway_details['code'] = $wallet_details['code'];
+            }
+
+            if (isset($wallet_details['id'])) {
+                $gateway_details['id'] = $wallet_details['id'];
+            }
+        }
+
+        return $gateway_details;
+    }
+
+    /**
      * Processes POST and GET notifications
      *
      * @param int $order_id
@@ -1005,9 +1060,7 @@ class Multisafepay extends Controller {
 
         $current_order_status = $order_info['order_status_id'];
         $psp_id = $transaction->getTransactionId();
-        $payment_details = $transaction->getPaymentDetails();
-        $gateway_id = $payment_details->getType();
-        $gateway_details = $this->multisafepay->getGatewayById($gateway_id);
+        $gateway_details = $this->getCallbackGatewayDetails($transaction);
         $status = $transaction->getStatus();
 
         switch ($status) {
@@ -1052,25 +1105,30 @@ class Multisafepay extends Controller {
                 break;
         }
 
-        if ($gateway_details &&
-            isset($gateway_details['route'], $order_info['payment_method']['code']) &&
-            !str_contains((string)$order_info['payment_method']['code'], (string)$gateway_details['route'])
-        ) {
-            // In the hypothetical case that the payment method name is empty,
-            // we will try to get the payment method name from the payment method code,
-            // and if it is not possible, we will set it as 'Unknown'.
-            $order_payment_name = $order_info['payment_method']['name'];
-            if (empty($order_payment_name)) {
-                $code_parts = explode('.', $order_info['payment_method']['code']);
-                $sub_parts = explode('/', $code_parts[0]);
-                if (!empty($sub_parts[1])) {
-                    $order_payment_name = ucfirst($sub_parts[1]);
-                } else {
-                    $order_payment_name = 'Unknown';
+        if ($gateway_details && isset($gateway_details['route'], $order_info['payment_method']['code'])) {
+            $order_payment_code = (string)$order_info['payment_method']['code'];
+            $order_payment_name = (string)($order_info['payment_method']['name'] ?? '');
+            $new_payment_name = (string)($gateway_details['description'] ?? '');
+
+            $route_changed = !str_contains($order_payment_code, (string)$gateway_details['route']);
+            $name_changed = ($new_payment_name !== '') && ($order_payment_name !== $new_payment_name);
+
+            if ($route_changed || $name_changed) {
+                // In the hypothetical case that the payment method name is empty,
+                // we will try to get the payment method name from the payment method code,
+                // and if it is not possible, we will set it as 'Unknown'.
+                if (empty($order_payment_name)) {
+                    $code_parts = explode('.', $order_info['payment_method']['code']);
+                    $sub_parts = explode('/', $code_parts[0]);
+                    if (!empty($sub_parts[1])) {
+                        $order_payment_name = ucfirst($sub_parts[1]);
+                    } else {
+                        $order_payment_name = 'Unknown';
+                    }
                 }
+                $this->log->write('Callback received with a different payment method for Order ID ' . $order_id . ' on ' . $timestamp . ' with Status: ' . $status . ', and PSP ID: ' . $psp_id . '; payment method changed from ' . $order_payment_name . ' to ' . $gateway_details['description'] . '.');
+                $this->{$this->model_call}->editOrderPaymentMethod($order_id, $gateway_details);
             }
-            $this->log->write('Callback received with a different payment method for Order ID ' . $order_id . ' on ' . $timestamp . ' with Status: ' . $status . ', and PSP ID: ' . $psp_id . '. and payment method pass from ' . $order_payment_name . ' to ' . $gateway_details['description'] . '.');
-            $this->{$this->model_call}->editOrderPaymentMethod($order_id, $gateway_details);
         }
 
         if (!$gateway_details) {
