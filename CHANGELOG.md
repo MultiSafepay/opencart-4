@@ -6,10 +6,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ***
 
+## 2.0.0
+Release date: March, 10th 2026
+
+### Added
++ PLGOPS4-77: Add support for OpenCart 4.1.0.3
++ DAVAMS-858: Add BILLINK payment method
++ DAVAMS-984: Add card names info to Apple Pay and Google Pay payment methods
+
+### Changed
++ DAVAMS-954: Change iDEAL - Wero and in3 payment names
+
+### Removed
++ DAVAMS-899: Remove ALIPAY payment method
++ DAVAMS-922: Remove Zinia payment method
++ DAVAMS-927: Remove Sofort payment method
+
+***
+
 ## 1.5.0
 Release date: December, 27th 2024
 
-### Add
+### Added
 + DAVAMS-805: Add BIZUM
 
 ### Removed
